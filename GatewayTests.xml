@@ -1,0 +1,8 @@
+<phpunit colors="true">
+	<testsuites>
+		<testsuite name="Gateway">
+			<file>./GatewayTest.php</file>
+			<directory>./Gateway</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

@@ -1,0 +1,8 @@
+<phpunit colors="true">
+	<testsuites>
+		<testsuite name="HttpRequest">
+			<file>./HttpRequestTest.php</file>
+			<directory>./HttpRequest</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

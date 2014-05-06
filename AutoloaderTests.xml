@@ -1,0 +1,8 @@
+<phpunit colors="true">
+	<testsuites>
+		<testsuite name="Autoloader">
+			<file>./AutoloaderTest.php</file>
+			<directory>./Autoloader</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

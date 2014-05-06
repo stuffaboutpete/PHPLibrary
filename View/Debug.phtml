@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+	
+	<meta charset="UTF-8">
+	<title><?= $message; ?></title>
+	
+	<style>
+		
+		body {
+			background-color: #dfdfdf;
+			margin: 0;
+			color: #222;
+		}
+		
+		h1, h2, h3, h4, dl, #stackTrace {
+			width:  80%;
+			max-width: 1000px;
+			margin: auto;
+		}
+		
+		h2, h3, #stackTrace {
+			font-family: monospace;
+			font-weight: normal;
+		}
+		
+		h1 {
+			color: #e92600;
+			margin: 24px auto 4px;
+			font-size: 26px;
+		}
+		
+		h2 {
+			font-size: 20px;
+		}
+		
+		h3 {
+			margin-top: 22px;
+		}
+		
+		h4 {
+			font-weight: normal;
+			color: #999;
+			margin-bottom: 6px;
+		}
+		
+		h4#responseCode {
+			margin-bottom: 24px;
+		}
+		
+		.errorWrapper {
+			background-color: #d6d6d6;
+			padding: 22px 0;
+			margin-bottom: 46px;
+			border: 1px solid #ccc;
+		}
+		
+		dt, dd {
+			display: inline-block;
+		}
+		
+		dl {
+			margin-bottom: 46px;
+		}
+		
+		dt {
+			font-weight: bold;
+			margin-bottom: 6px;
+		}
+		
+		dd {
+			margin-left: 4px;
+		}
+		
+		#stackTrace {
+			margin: auto;
+			background-color: #ffe39b;
+			padding: 10px;
+			list-style-position: inside;
+			border: 1px solid #bbb;
+		}
+		
+		#stackTrace .hasDetails {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+		
+		#stackTrace .hasDetails:hover {
+			background-color: rgba(255, 0, 0, 0.4);
+		}
+		
+		#stackTrace .details {
+			position: absolute;
+			background-color: #F3CAA5;
+			padding: 5px 10px;
+			border: 1px solid #FF9E34;
+			border-radius: 4px;
+			left: 0;
+			z-index: 1;
+			display: none;
+			list-style-position: inside;
+/*			box-shadow: 0 0 600px 0 rgba(0, 0, 0, 0.5);
+*/		}
+		
+	</style>
+	
+</head>
+<body>
+	
+	<h1>An unhandled <?= $errorType; ?> occurred</h1>
+	
+	<h4 id="responseCode">Response Code: <?= $responseCode; ?></h4>
+	
+	<div class="errorWrapper">
+		<h2><?= $message; ?></h2>
+		<?php if (isset($subMessage)) : ?><h3>(<?= $subMessage; ?>)</h3><?php endif; ?>
+	</div>
+	
+	<h4><?= ucfirst($errorType); ?> details:</h4>
+	
+	<dl>
+		<dt><?= ($errorType == 'exception') ? 'Class' : 'Type'; ?></dt>
+		<dd><?= $type; ?></dd>
+		<br>
+		<dt>Code</dt>
+		<dd><?= $code; ?></dd>
+	</dl>
+	
+	<h4>Thrown from:</h4>
+	
+	<dl>
+		<?php if (isset($class)) : ?>
+			<dt>Class</dt>
+			<dd><?= $class; ?></dd>
+			<br>
+		<?php endif; ?>
+		<dt>File name</dt>
+		<dd><?= $fileName; ?></dd>
+		<br>
+		<dt>Line number</dt>
+		<dd><?= $lineNumber; ?></dd>
+	</dl>
+	
+	<?php if (isset($stackTrace)) : ?>
+		
+		<ol id="stackTrace">
+			<?php foreach ($stackTrace as $call) : ?>
+				<li>
+					<span class="fileName
+						<?php if (isset($call['filePath'])) echo 'hasDetails' ?>
+					"><?= $call['fileName']; ?></span>
+					<?php if (isset($call['filePath'])) : ?>
+						<span class="details">
+							File: <?= $call['filePath']; ?>
+							at line: <?= $call['lineNumber']; ?>
+						</span>
+					<?php endif; ?>
+					called
+					<span class="call"><?= $call['call']; ?></span>
+					with
+					<span class="arguments
+						<?php if (count($call['arguments'])) echo 'hasDetails' ?>
+					"><?= count($call['arguments']); ?> arguments</span>
+					<ol class="details">
+						<?php foreach ($call['arguments'] as $argument) : ?>
+							<li>
+								$<?= $argument['name']; ?>
+								<?php if ($argument['optional']) echo '(optional)'; ?>
+								- <?= $argument['type']; ?>
+							</li>
+						<?php endforeach; ?>
+					</ol>
+				</li>
+			<?php endforeach; ?>
+		</ol>
+		
+	<?php endif; ?>
+	
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+	<script>
+		
+		$('.hasDetails').hover(function(){
+			var $stackTrace = $('#stackTrace');
+			var $details = $(this).next('.details');
+			$details.show().css({
+				width: $stackTrace.width() - 8,
+				left: $stackTrace.offset().left + 4,
+				top: $(this).offset().top - $details.height() - 16
+			});
+		}, function(){
+			$(this).next('.details').hide();
+		});
+		
+	</script>
+	
+</body>
+</html>

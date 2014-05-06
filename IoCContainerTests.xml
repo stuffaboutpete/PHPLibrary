@@ -1,0 +1,8 @@
+<phpunit colors="true">
+	<testsuites>
+		<testsuite name="IoCContainer">
+			<file>./IoCContainerTest.php</file>
+			<directory>./IoCContainer</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
