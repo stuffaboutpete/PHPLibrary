@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Gateway;
+namespace PO\Gateway;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const CLASS_TYPE_NOT_SPECIFIED									= 0;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/HttpRequest.php';
 require_once dirname(__FILE__) . '/HttpRequest/ITransferMethod.php';
@@ -15,10 +15,10 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		$this->mTransferMethod = $this->getMock(
-			'\\Suburb\\HttpRequest\\ITransferMethod'
+			'\\PO\\HttpRequest\\ITransferMethod'
 		);
 		$this->mResponse = $this->getMock(
-			'\\Suburb\\HttpRequest\\Response'
+			'\\PO\\HttpRequest\\Response'
 		);
 		parent::setUp();
 	}
@@ -36,7 +36,7 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mTransferMethod,
 			$this->mResponse
 		);
-		$this->assertInstanceOf('\\Suburb\\HttpRequest', $request);
+		$this->assertInstanceOf('\\PO\\HttpRequest', $request);
 	}
 	
 	public function testGetMethodExists()
@@ -83,7 +83,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo('http://somewhere.com'),
 				$this->equalTo('GET'),
-				$this->isInstanceOf('\Suburb\HttpRequest\Response')
+				$this->isInstanceOf('\PO\HttpRequest\Response')
 			);
 		$this->mResponse
 			->expects($this->any())
@@ -104,7 +104,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo('http://somewhere.com'),
 				$this->equalTo('POST'),
-				$this->isInstanceOf('\Suburb\HttpRequest\Response')
+				$this->isInstanceOf('\PO\HttpRequest\Response')
 			);
 		$this->mResponse
 			->expects($this->any())
@@ -125,7 +125,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo('http://somewhere.com'),
 				$this->equalTo('PUT'),
-				$this->isInstanceOf('\Suburb\HttpRequest\Response')
+				$this->isInstanceOf('\PO\HttpRequest\Response')
 			);
 		$this->mResponse
 			->expects($this->any())
@@ -146,7 +146,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo('http://somewhere.com'),
 				$this->equalTo('DELETE'),
-				$this->isInstanceOf('\Suburb\HttpRequest\Response')
+				$this->isInstanceOf('\PO\HttpRequest\Response')
 			);
 		$this->mResponse
 			->expects($this->any())

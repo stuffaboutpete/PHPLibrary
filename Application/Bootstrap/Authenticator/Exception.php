@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Bootstrap\Authenticator;
+namespace PO\Application\Bootstrap\Authenticator;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const USER_IS_ALREADY_REGISTERED	= 0;

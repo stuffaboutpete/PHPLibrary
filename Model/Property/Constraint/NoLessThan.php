@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
+namespace PO\Model\Property\Constraint;
 
-use Suburb\Model;
-use Suburb\Model\Property\IConstraint;
+use PO\Model;
+use PO\Model\Property\IConstraint;
 
 class NoLessThan
 implements IConstraint

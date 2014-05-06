@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Gateway\Factory\Model;
+namespace PO\Gateway\Factory\Model;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const BUILD_MAP_SUPPLIED_MUST_BE_ASSOCIATIVE_ARRAY_OR_NULL	= 0;

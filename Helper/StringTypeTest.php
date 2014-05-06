@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Helper;
+namespace PO\Helper;
 
 require_once dirname(__FILE__) . '/StringType.php';
 

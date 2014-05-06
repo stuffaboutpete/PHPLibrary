@@ -1,15 +1,15 @@
 <?php
 
-namespace Suburb\HttpRequest\TransferMethod;
+namespace PO\HttpRequest\TransferMethod;
 
 class Curl
-implements \Suburb\HttpRequest\ITransferMethod
+implements \PO\HttpRequest\ITransferMethod
 {
 	
 	public function request(
 		/* string */					$path,
 		/* string */					$method,
-		\Suburb\HttpRequest\Response	$response,
+		\PO\HttpRequest\Response	$response,
 		array							$headers = null,
 		/* mixed */						$data = null
 	)

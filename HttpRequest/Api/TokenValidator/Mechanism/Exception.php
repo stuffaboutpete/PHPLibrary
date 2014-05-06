@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\TokenValidator\Mechanism;
+namespace PO\HttpRequest\Api\TokenValidator\Mechanism;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const GENERIC_ERROR				= 0;

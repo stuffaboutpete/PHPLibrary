@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
+namespace PO\Model\Property\Constraint;
 
 require_once dirname(__FILE__) . '/../IConstraint.php';
 require_once dirname(__FILE__) . '/../../../Exception.php';
@@ -31,7 +31,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testEmptyStringFails()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Constraint\Exception');
+		$this->setExpectedException('\PO\Model\Property\Constraint\Exception');
 		$this->constraint->isValid('');
 	}
 	
@@ -42,13 +42,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testEmptyArrayFails()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Constraint\Exception');
+		$this->setExpectedException('\PO\Model\Property\Constraint\Exception');
 		$this->constraint->isValid([]);
 	}
 	
 	public function testArrayOfNullsFails()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Constraint\Exception');
+		$this->setExpectedException('\PO\Model\Property\Constraint\Exception');
 		$this->constraint->isValid([null, null]);
 	}
 	
@@ -59,7 +59,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testEmptyAssociativeArrayFails()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Constraint\Exception');
+		$this->setExpectedException('\PO\Model\Property\Constraint\Exception');
 		$this->constraint->isValid(['key' => null]);
 	}
 	

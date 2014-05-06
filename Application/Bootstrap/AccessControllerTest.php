@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
 require_once dirname(__FILE__) . '/../../Application.php';
 require_once dirname(__FILE__) . '/../IBootstrap.php';
@@ -15,7 +15,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mApplication = $this->getMockBuilder('\Suburb\Application')
+		$this->mApplication = $this->getMockBuilder('\PO\Application')
 			->disableOriginalConstructor()
 			->getMock();
 		parent::setUp();
@@ -31,14 +31,14 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$accessControllerBootstrap = new AccessController();
 		$this->assertInstanceOf(
-			'\Suburb\Application\Bootstrap\AccessController',
+			'\PO\Application\Bootstrap\AccessController',
 			$accessControllerBootstrap
 		);
 	}
 	
 	public function testAuthenticatorApplicationExtensionMustExist()
 	{
-		$this->setExpectedException('\Suburb\Application\Bootstrap\AccessController\Exception');
+		$this->setExpectedException('\PO\Application\Bootstrap\AccessController\Exception');
 		$this->mApplication
 			->expects($this->once())
 			->method('hasExtension')

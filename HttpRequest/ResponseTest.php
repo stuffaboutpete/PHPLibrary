@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest;
+namespace PO\HttpRequest;
 
 require_once dirname(__FILE__) . '/Response.php';
 
@@ -19,34 +19,34 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testResponseCanBeInstantiated()
 	{
-		$response = new \Suburb\HttpRequest\Response();
-		$this->assertInstanceOf('\\Suburb\\HttpRequest\\Response', $response);
+		$response = new \PO\HttpRequest\Response();
+		$this->assertInstanceOf('\\PO\\HttpRequest\\Response', $response);
 	}
 	
 	public function testResponseCanBeInitialisedWithCodeAndContentType()
 	{
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'text/html');
 	}
 	
 	public function testInitialisationRejectsInvalidResponseCodes()
 	{
 		$this->setExpectedException('\\InvalidArgumentException');
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(999, 'text/html');
 	}
 	
 	public function testResponseCanOnlyBeInitialisedOnce()
 	{
 		$this->setExpectedException('\\RuntimeException');
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'text/html');
 		$response->initialise(201, 'text/html');
 	}
 	
 	public function testResponseCodeAndContentTypeCanBeRetrieved()
 	{
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'text/html');
 		$this->assertEquals(200, $response->getCode());
 		$this->assertEquals('text/html', $response->getContentType());
@@ -54,21 +54,21 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testBodyCanBeSetOnInitialisationAndRecalled()
 	{
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'text/html', 'some_data');
 		$this->assertEquals('some_data', $response->getBody());
 	}
 	
 	public function testGetBodyReturnsDecodedBodyIfAvailable()
 	{
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'application/json', '{"key":"value"}');
 		$this->assertEquals(['key' => 'value'], $response->getBody());
 	}
 	
 	public function testRawBodyCanAlsoBeRetrieved()
 	{
-		$response = new \Suburb\HttpRequest\Response();
+		$response = new \PO\HttpRequest\Response();
 		$response->initialise(200, 'application/json', '{"key":"value"}');
 		$this->assertEquals('{"key":"value"}', $response->getRawBody());
 	}

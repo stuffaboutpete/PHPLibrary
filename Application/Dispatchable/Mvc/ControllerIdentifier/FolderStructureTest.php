@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc\ControllerIdentifier;
+namespace PO\Application\Dispatchable\Mvc\ControllerIdentifier;
 
 require_once 'vfsStream/vfsStream.php';
 require_once dirname(__FILE__) . '/../IControllerIdentifier.php';
@@ -19,7 +19,7 @@ extends \PHPUnit_Framework_TestCase {
 			if (!preg_match('/Index/', $class)) return;
 			$classParts = explode('\\', $class);
 			$path = \vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/' .
 				'IndexesRoot/' .
 				implode('/', $classParts) .
 				'.php'
@@ -30,7 +30,7 @@ extends \PHPUnit_Framework_TestCase {
 			$class = ltrim($class, '\\');
 			$classParts = explode('\\', $class);
 			$path = \vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/' .
 				implode('/', $classParts) .
 				'.php'
 			);
@@ -41,7 +41,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		$this->virtualDir = \vfsStream::setup(
-			'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest',
+			'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest',
 			null,
 			array(
 				'Test.php' => '<?php class Test {}',
@@ -102,7 +102,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$identifier = new FolderStructure();
 		$this->assertInstanceOf(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure',
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure',
 			$identifier
 		);
 	}
@@ -166,7 +166,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testErrorIsThrownIfBothClassFileAndRelatedIndexClassExist()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure();
 		$identifier->receivePath('/nestedconflict');
@@ -218,11 +218,11 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest'
 			)
 		);
 		$this->assertInstanceOf(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure',
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure',
 			$identifier
 		);
 	}
@@ -230,7 +230,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testNonExistentDirectoryTriggersError()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure(
 			null,
@@ -243,13 +243,13 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/test');
 		$this->assertEquals(
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
 				'/Templates/Test.phtml'
 			),
 			$identifier->getTemplatePath()
@@ -261,7 +261,7 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/nonexistent');
@@ -273,13 +273,13 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/test/nested/twice');
 		$this->assertEquals(
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
 				'/Templates/Test/Nested/Twice.phtml'
 			),
 			$identifier->getTemplatePath()
@@ -291,7 +291,7 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/test/nonexistent');
@@ -303,13 +303,13 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/test/key/value');
 		$this->assertEquals(
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
 				'/Templates/Test.phtml'
 			),
 			$identifier->getTemplatePath()
@@ -321,7 +321,7 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/test/value');
@@ -333,13 +333,13 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/');
 		$this->assertEquals(
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
 				'/Templates/Index.phtml'
 			),
 			$identifier->getTemplatePath()
@@ -351,13 +351,13 @@ extends \PHPUnit_Framework_TestCase {
 		$identifier = new FolderStructure(
 			null,
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/Templates'
 			)
 		);
 		$identifier->receivePath('/nested');
 		$this->assertEquals(
 			\vfsStream::url(
-				'SuburbApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
 				'/Templates/Nested/Index.phtml'
 			),
 			$identifier->getTemplatePath()
@@ -367,7 +367,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testErrorIsThrownIfBothTemplateFileAndRelatedIndexTemplateExist()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure();
 		$identifier->receivePath('/nestedconflict');
@@ -412,7 +412,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testExceptionIsThrownIfReceivePathIsNotCalledBeforeGetControllerClass()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure();
 		$identifier->getControllerClass();
@@ -421,7 +421,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testExceptionIsThrownIfReceivePathIsNotCalledBeforeGetTemplatePath()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure(null, '/path');
 		$identifier->getTemplatePath();
@@ -430,7 +430,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testExceptionIsThrownIfReceivePathIsNotCalledBeforeGetPathVariables()
 	{
 		$this->setExpectedException(
-			'\Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
+			'\PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception'
 		);
 		$identifier = new FolderStructure();
 		$identifier->getPathVariables();
@@ -445,8 +445,8 @@ extends \PHPUnit_Framework_TestCase {
 		return <<<CLASS
 <?php
 namespace MyNamespace;
-		use \Suburb\Application;
-		use \Suburb\Application\Dispatchable\Mvc\Controller;
+		use \PO\Application;
+		use \PO\Application\Dispatchable\Mvc\Controller;
 		class $className
 		extends Controller
 		{

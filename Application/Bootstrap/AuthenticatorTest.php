@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
 require_once dirname(__FILE__) . '/../IBootstrap.php';
 require_once dirname(__FILE__) . '/Authenticator.php';
@@ -17,8 +17,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mCookieHelper = $this->getMock('\Suburb\Helper\Cookie');
-		$this->mPdo = $this->getMock('\Suburb\Application\Bootstrap\AuthenticatorTestPDO');
+		$this->mCookieHelper = $this->getMock('\PO\Helper\Cookie');
+		$this->mPdo = $this->getMock('\PO\Application\Bootstrap\AuthenticatorTestPDO');
 		$this->mPdoStatement = $this->getMock('\PDOStatement');
 		parent::setUp();
 	}
@@ -34,7 +34,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testAuthenticatorBootstrapCanBeInstantiated()
 	{
 		$authenticator = new Authenticator($this->mCookieHelper);
-		$this->assertInstanceOf('\Suburb\Application\Bootstrap\Authenticator', $authenticator);
+		$this->assertInstanceOf('\PO\Application\Bootstrap\Authenticator', $authenticator);
 	}
 	
 	public function testUserDoesNotHavePrivilegesForSomeAccessTypeByDefault()
@@ -137,7 +137,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testReRegisteringAUserResultsInAnException()
 	{
 		
-		$this->setExpectedException('\Suburb\Application\Bootstrap\Authenticator\Exception');
+		$this->setExpectedException('\PO\Application\Bootstrap\Authenticator\Exception');
 		
 		// Check user exists
 		$this->mPdo
@@ -606,7 +606,7 @@ extends \PHPUnit_Framework_TestCase {
 		$authenticator = new Authenticator($this->mCookieHelper, $this->mPdo);
 		$this->assertTrue($authenticator->authenticateUser('example@identifier.com', 'password'));
 		
-		$this->setExpectedException('\Suburb\Application\Bootstrap\Authenticator\Exception');
+		$this->setExpectedException('\PO\Application\Bootstrap\Authenticator\Exception');
 		$authenticator->authenticateUser('example@identifier.com');
 		
 	}

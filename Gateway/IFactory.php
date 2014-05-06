@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Gateway;
+namespace PO\Gateway;
 
 interface IFactory
 {

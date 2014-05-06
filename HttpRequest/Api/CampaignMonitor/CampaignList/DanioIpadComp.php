@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\CampaignMonitor\CampaignList;
+namespace PO\HttpRequest\Api\CampaignMonitor\CampaignList;
 
-use Suburb\HttpRequest\Api\CampaignMonitor;
+use PO\HttpRequest\Api\CampaignMonitor;
 
 class DanioIpadComp
 implements CampaignMonitor\ICampaignList

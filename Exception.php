@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 abstract class Exception
 extends \Exception

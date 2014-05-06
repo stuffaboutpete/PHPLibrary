@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\Gateway\QueryProvider;
+namespace PO\Gateway\QueryProvider;
 
-use Suburb\Gateway\IQueryProvider;
+use PO\Gateway\IQueryProvider;
 
 class Simple
 implements IQueryProvider

@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest;
+namespace PO\HttpRequest;
 
 class Response
 {

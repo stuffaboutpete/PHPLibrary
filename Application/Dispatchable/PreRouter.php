@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
-use Suburb\Application;
-use Suburb\Application\IDispatchable;
-use Suburb\Http\Response;
+use PO\Application;
+use PO\Application\IDispatchable;
+use PO\Http\Response;
 
 class PreRouter
 implements IDispatchable

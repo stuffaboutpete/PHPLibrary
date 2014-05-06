@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once 'vfsStream/vfsStream.php';
 require_once dirname(__FILE__) . '/View.php';
@@ -24,20 +24,20 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->virtualDir = \vfsStream::setup('SuburbViewTest', null, array(
-			'Test.php' => '<?php namespace SuburbViewTest; class Test extends \Suburb\View {}',
+		$this->virtualDir = \vfsStream::setup('POViewTest', null, array(
+			'Test.php' => '<?php namespace POViewTest; class Test extends \PO\View {}',
 			'Test.phtml' => 'I\'m in Test.phtml<?php if (isset($key)) echo " ($key)"; ?>',
 			'Other.phtml' => 'I\'m in Other.phtml',
-			'TestViewCreator.php' => '<?php namespace SuburbViewTest; class TestViewCreator {' .
+			'TestViewCreator.php' => '<?php namespace POViewTest; class TestViewCreator {' .
 				'public static function makeView($path) {' .
-					'return new \Suburb\View($path);' .
+					'return new \PO\View($path);' .
 				'}' .
 			'}',
 			'Nested' => array(
 				'Test.phtml' => 'I\'m in Nested/Test.phtml'
 			),
-			'NoTemplate.php' => '<?php namespace SuburbViewTest;' .
-				'class NoTemplate extends \Suburb\View {}'
+			'NoTemplate.php' => '<?php namespace POViewTest;' .
+				'class NoTemplate extends \PO\View {}'
 		));
 		parent::setUp();
 	}
@@ -50,79 +50,79 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testViewCanBeInstantiated()
 	{
-		$view = new View(\vfsStream::url('SuburbViewTest/Test.phtml'));
-		$this->assertInstanceOf('Suburb\View', $view);
+		$view = new View(\vfsStream::url('POViewTest/Test.phtml'));
+		$this->assertInstanceOf('PO\View', $view);
 	}
 	
 	public function testPathToTemplateCanBeProvidedAndItIsRenderedByToStringMethod()
 	{
-		$view = new View(\vfsStream::url('SuburbViewTest/Test.phtml'));
+		$view = new View(\vfsStream::url('POViewTest/Test.phtml'));
 		$this->assertEquals('I\'m in Test.phtml', $view->__toString());
 	}
 	
 	public function testExceptionIsThrownIfNonStringPathIsProvided()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
+		$this->setExpectedException('\PO\View\Exception');
 		$view = new View([]);
 	}
 	
 	public function testExceptionIsThrownIfEmptyStringPathIsProvided()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
+		$this->setExpectedException('\PO\View\Exception');
 		$view = new View('');
 	}
 	
 	public function testTemplatePathCanOmitExtensionAndPhtmlIsAssumed()
 	{
-		$view = new View(\vfsStream::url('SuburbViewTest/Test'));
+		$view = new View(\vfsStream::url('POViewTest/Test'));
 		$this->assertEquals('I\'m in Test.phtml', $view->__toString());
 	}
 	
 	public function testExceptionIsThrownIfAbsolutePathToTemplateIsInvalid()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
-		$view = new View(\vfsStream::url('SuburbViewTest/InvalidPath.phtml'));
+		$this->setExpectedException('\PO\View\Exception');
+		$view = new View(\vfsStream::url('POViewTest/InvalidPath.phtml'));
 	}
 	
 	public function testPathToTemplateCanBeNextToCallingCodeFile()
 	{
-		$view = \SuburbViewTest\TestViewCreator::makeView('Test.phtml');
+		$view = \POViewTest\TestViewCreator::makeView('Test.phtml');
 		$this->assertEquals('I\'m in Test.phtml', $view->__toString());
 	}
 	
 	public function testPathToTemplateCanBeRelativeToCallingCodeFile()
 	{
-		$view = \SuburbViewTest\TestViewCreator::makeView('Nested/Test.phtml');
+		$view = \POViewTest\TestViewCreator::makeView('Nested/Test.phtml');
 		$this->assertEquals('I\'m in Nested/Test.phtml', $view->__toString());
 	}
 	
 	public function testExceptionIsThrownIRelativePathToTemplateIsInvalid()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
-		$view = \SuburbViewTest\TestViewCreator::makeView('InvalidPath.phtml');
+		$this->setExpectedException('\PO\View\Exception');
+		$view = \POViewTest\TestViewCreator::makeView('InvalidPath.phtml');
 	}
 	
 	public function testInheritingClassesCanOmitPathAndTemplateWithSameNameIsUsed()
 	{
-		$view = new \SuburbViewTest\Test();
+		$view = new \POViewTest\Test();
 		$this->assertEquals('I\'m in Test.phtml', $view->__toString());
 	}
 	
 	public function testExceptionIsThrownIfClassNameTemplateCannotBeFound()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
-		$view = new \SuburbViewTest\NoTemplate();
+		$this->setExpectedException('\PO\View\Exception');
+		$view = new \POViewTest\NoTemplate();
 	}
 	
 	public function testInheritingClassCanPassPathWhichWillBeUsed()
 	{
-		$view = new \SuburbViewTest\Test('Other');
+		$view = new \POViewTest\Test('Other');
 		$this->assertEquals('I\'m in Other.phtml', $view->__toString());
 	}
 	
 	public function testTemplateVariablesCanBeAddedAndUsedInTemplate()
 	{
-		$view = new View(\vfsStream::url('SuburbViewTest/Test.phtml'));
+		$view = new View(\vfsStream::url('POViewTest/Test.phtml'));
 		$class = new \ReflectionClass($view);
 		$method = $class->getMethod('addTemplateVariable');
 		$method->setAccessible(true);
@@ -132,14 +132,14 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testTemplateVariablesCanBePassedToConstructor()
 	{
-		$view = new View(\vfsStream::url('SuburbViewTest/Test.phtml'), ['key' => 'value']);
+		$view = new View(\vfsStream::url('POViewTest/Test.phtml'), ['key' => 'value']);
 		$this->assertEquals('I\'m in Test.phtml (value)', $view->__toString());
 	}
 	
 	public function testExceptionIsThrownIfConstructorTemplateVariablesAreNotAssociativeArray()
 	{
-		$this->setExpectedException('\Suburb\View\Exception');
-		$view = new View(\vfsStream::url('SuburbViewTest/Test.phtml'), ['value 1', 'value 2']);
+		$this->setExpectedException('\PO\View\Exception');
+		$view = new View(\vfsStream::url('POViewTest/Test.phtml'), ['value 1', 'value 2']);
 	}
 	
 }

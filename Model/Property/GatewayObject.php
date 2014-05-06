@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
-use Suburb\Gateway;
-use Suburb\Model;
-use Suburb\Model\Property;
-use Suburb\Model\Property\GatewayObject\Exception;
+use PO\Gateway;
+use PO\Model;
+use PO\Model\Property;
+use PO\Model\Property\GatewayObject\Exception;
 
 class GatewayObject
 extends Property

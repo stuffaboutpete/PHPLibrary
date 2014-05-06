@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb\IoCContainer\Containment;
+namespace PO\IoCContainer\Containment;
 
-use Suburb\IoCContainer;
-use Suburb\IoCContainer\IContainment;
-use Suburb\IoCContainer\Containment;
+use PO\IoCContainer;
+use PO\IoCContainer\IContainment;
+use PO\IoCContainer\Containment;
 
 class All
 implements IContainment

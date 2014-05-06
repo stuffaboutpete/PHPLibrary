@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Gateway\Factory;
+namespace PO\Gateway\Factory;
 
-use Suburb\Gateway\IFactory;
-use Suburb\Gateway\Factory\Model\Exception;
-use Suburb\Helper\ArrayType;
-use Suburb\Helper\StringType;
+use PO\Gateway\IFactory;
+use PO\Gateway\Factory\Model\Exception;
+use PO\Helper\ArrayType;
+use PO\Helper\StringType;
 
 class Model
 implements IFactory

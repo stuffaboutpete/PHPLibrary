@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc;
+namespace PO\Application\Dispatchable\Mvc;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const NO_CONTROLLER_CLASS_OR_TEMPLATE_COULD_BE_IDENTIFIED					= 1;
@@ -28,7 +28,7 @@ extends \Suburb\Exception
 			
 			case Exception::CONTROLLER_CLASS_IS_NOT_CONTROLLER:
 				return 'The identified controller is not an instance of ' .
-					'Suburb\Application\Dispatchable\Mvc\Controller';
+					'PO\Application\Dispatchable\Mvc\Controller';
 			break;
 			
 			case Exception::CONTROLLER_TEMPLATE_DOES_NOT_EXIST:

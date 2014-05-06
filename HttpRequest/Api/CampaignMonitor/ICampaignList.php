@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\CampaignMonitor;
+namespace PO\HttpRequest\Api\CampaignMonitor;
 
 interface ICampaignList
 {

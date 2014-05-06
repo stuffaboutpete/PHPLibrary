@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Helper;
+namespace PO\Helper;
 
 /**
  * Exists for testing purposes - cookies

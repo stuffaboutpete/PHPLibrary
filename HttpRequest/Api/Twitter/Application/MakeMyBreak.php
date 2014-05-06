@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\Twitter\Application;
+namespace PO\HttpRequest\Api\Twitter\Application;
 
-use Suburb\HttpRequest\Api\Twitter;
+use PO\HttpRequest\Api\Twitter;
 
 class MakeMyBreak
 implements Twitter\IApplication

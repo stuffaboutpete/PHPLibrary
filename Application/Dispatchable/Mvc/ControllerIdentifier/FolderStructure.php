@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc\ControllerIdentifier;
+namespace PO\Application\Dispatchable\Mvc\ControllerIdentifier;
 
-use Suburb\Application\Dispatchable\Mvc\IControllerIdentifier;
-use Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception;
+use PO\Application\Dispatchable\Mvc\IControllerIdentifier;
+use PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure\Exception;
 
 class FolderStructure
 implements IControllerIdentifier

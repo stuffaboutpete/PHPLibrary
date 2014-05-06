@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application;
+namespace PO\Application;
 
 require_once dirname(__FILE__) . '/Response.php';
 
@@ -23,7 +23,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testResponseCanBeInstantiated()
 	{
 		$response = new Response();
-		$this->assertInstanceOf('\\Suburb\\Application\\Response', $response);
+		$this->assertInstanceOf('\\PO\\Application\\Response', $response);
 	}
 	
 	public function testResponseCanBeInitialisedWithCodeAndBody()

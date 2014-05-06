@@ -1,12 +1,12 @@
 <?php
 
-namespace Suburb\Model;
+namespace PO\Model;
 
-use Suburb\Model\Property\IConstraint;
-use Suburb\Model\Property\Exception;
+use PO\Model\Property\IConstraint;
+use PO\Model\Property\Exception;
 
 /**
- * Suburb\Model\Property
+ * PO\Model\Property
  * 
  * Used to represent an object with a
  * single value which may or may not
@@ -28,7 +28,7 @@ abstract class Property
 	 * Constraints the property is subject to
 	 * 
 	 * This will only hold instances of
-	 * Suburb\Model\Property\IConstraint
+	 * PO\Model\Property\IConstraint
 	 * 
 	 * @var array
 	 */
@@ -49,11 +49,11 @@ abstract class Property
 	 * Constructor
 	 * 
 	 * Accepts an array of instances of
-	 * Suburb\Model\Property\IConstraint as
+	 * PO\Model\Property\IConstraint as
 	 * well as a boolean declaring whether
 	 * the property value is optional
 	 * 
-	 * @param  array   $constraints An array of instances of Suburb\Model\Property\IConstraint
+	 * @param  array   $constraints An array of instances of PO\Model\Property\IConstraint
 	 * @param  boolean $optional    optional Whether the property value is optional
 	 * @return null
 	 * @throws InvalidArgumentException If non-IConstraints are provided
@@ -64,7 +64,7 @@ abstract class Property
 		// @todo Should optional value be set using a method?
 		
 		// Ensure each constraint is an instance
-		// of Suburb\Model\Property\Constraint and
+		// of PO\Model\Property\Constraint and
 		// save it if so
 		foreach ((array) $constraints as $constraint) {
 			if (!$constraint instanceof IConstraint) {
@@ -89,7 +89,7 @@ abstract class Property
 	 * a predictable type
 	 * 
 	 * @param mixed $value              optional The value to be set or null as default
-	 * @return Suburb\Model\Property    $this
+	 * @return PO\Model\Property    $this
 	 * @throws InvalidArgumentException If null is set when the value is not optional
 	 * @throws InvalidArgumentException If value does not match at least one constraint
 	 */

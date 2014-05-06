@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\HttpRequest\Api;
+namespace PO\HttpRequest\Api;
 
 class Twitter
-extends \Suburb\HttpRequest
+extends \PO\HttpRequest
 {
 	
 	private $application;

@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Gateway\Collection;
+namespace PO\Gateway\Collection;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const MISSING_CONSTRUCTOR_ARGUMENT					= 1;

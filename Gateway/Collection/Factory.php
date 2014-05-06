@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb\Gateway\Collection;
+namespace PO\Gateway\Collection;
 
-use Suburb\Gateway;
-use Suburb\Gateway\Collection;
-use Suburb\Gateway\IFactory;
+use PO\Gateway;
+use PO\Gateway\Collection;
+use PO\Gateway\IFactory;
 
 /**
  * The only reason for this class is testing

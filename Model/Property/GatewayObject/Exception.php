@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Model\Property\GatewayObject;
+namespace PO\Model\Property\GatewayObject;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const INVALID_CLASS_NAME_PROVIDED						= 0;

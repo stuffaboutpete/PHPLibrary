@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Model;
+namespace PO\Model;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const INVALID_PROPERTY_NAME							= 0;
@@ -30,7 +30,7 @@ extends \Suburb\Exception
 			break;
 			
 			case Exception::PROVIDED_PROPERTY_NOT_INSTANCE_OF_PROPERTY:
-				return 'A supplied property was not an instance of Suburb\Model\Property';
+				return 'A supplied property was not an instance of PO\Model\Property';
 			break;
 			
 		}

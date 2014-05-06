@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\HttpRequest\Api;
+namespace PO\HttpRequest\Api;
 
 class CampaignMonitor
-extends \Suburb\HttpRequest
+extends \PO\HttpRequest
 {
 	
 	public function __construct($transferMethod, $response)

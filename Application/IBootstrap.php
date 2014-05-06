@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\Application;
+namespace PO\Application;
 
-use Suburb\Application;
+use PO\Application;
 
 interface IBootstrap
 {

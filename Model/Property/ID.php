@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
-use Suburb\Model\Property\Integer;
+use PO\Model\Property\Integer;
 
 /**
- * Suburb\Model\Property\ID
+ * PO\Model\Property\ID
  * 
  * An implementation of a Property
  * which will only hold a positive integer
@@ -20,7 +20,7 @@ extends Integer
 	 * @param  mixed   $originalValue   Any value
 	 * @return boolean                  The integer value of the input
 	 * @throws InvalidArgumentException If input is not a positive integer
-	 * @see    Suburb\Model\Property\Integer
+	 * @see    PO\Model\Property\Integer
 	 */
 	public function editInput($originalValue)
 	{

@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Bootstrap\Authenticator;
+namespace PO\Application\Bootstrap\Authenticator;
 
-use Suburb\Application;
-use Suburb\Application\Bootstrap\Authenticator;
+use PO\Application;
+use PO\Application\Bootstrap\Authenticator;
 
 require_once LIBRARY_PATH . '/Facebook/src/facebook.php';
 

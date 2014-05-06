@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
+namespace PO\Model\Property\Constraint;
 
 require_once dirname(__FILE__) . '/Positive.php';
 

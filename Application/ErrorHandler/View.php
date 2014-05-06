@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\ErrorHandler;
+namespace PO\Application\ErrorHandler;
 
-use Suburb\Application;
-use Suburb\Http\Response;
+use PO\Application;
+use PO\Http\Response;
 
 class View
 implements Application\IErrorHandler
@@ -24,7 +24,7 @@ implements Application\IErrorHandler
 		$responseCode = isset($recommendedResponseCode) ? $recommendedResponseCode : 500;
 		$method = 'set' . $responseCode;
 		$this->response->$method(
-			(new \Suburb\View\Debug($exception, null, $responseCode))->__toString()
+			(new \PO\View\Debug($exception, null, $responseCode))->__toString()
 		);
 	}
 	
@@ -42,7 +42,7 @@ implements Application\IErrorHandler
 			E_USER_WARNING
 		];
 		if (in_array($error['type'], $errors)) {
-			echo (new \Suburb\View\Debug(null, error_get_last(), 500))->__toString();
+			echo (new \PO\View\Debug(null, error_get_last(), 500))->__toString();
 		}
 	}
 	

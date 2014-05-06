@@ -1,16 +1,16 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
-use Suburb\Application;
-use Suburb\Application\IErrorHandler;
-use Suburb\Application\IDispatchable;
-use Suburb\Application\Dispatchable\Mvc\Controller;
-use Suburb\Application\Dispatchable\Mvc\IControllerIdentifier;
-use Suburb\Application\Dispatchable\Mvc\Exception;
-use Suburb\Http\Response;
-use Suburb\IoCContainer;
-use Suburb\Helper\ArrayType;
+use PO\Application;
+use PO\Application\IErrorHandler;
+use PO\Application\IDispatchable;
+use PO\Application\Dispatchable\Mvc\Controller;
+use PO\Application\Dispatchable\Mvc\IControllerIdentifier;
+use PO\Application\Dispatchable\Mvc\Exception;
+use PO\Http\Response;
+use PO\IoCContainer;
+use PO\Helper\ArrayType;
 
 /**
  * Needs re-commenting
@@ -39,7 +39,7 @@ implements IDispatchable
 	 * controller if available so that
 	 * the controller can declare dependencies
 	 * 
-	 * @var Suburb\IoCContainer
+	 * @var PO\IoCContainer
 	 */
 	private $ioCContainer;
 	
@@ -54,7 +54,7 @@ implements IDispatchable
 	 * 
 	 * @param string $controllerPath            The root directory that controllers are found
 	 * @param string $controllerBaseNamespace   The root namespace that controllers are found
-	 * @param Suburb\IoCContainer $ioCContainer optional An IoC container to resolve the controller
+	 * @param PO\IoCContainer $ioCContainer optional An IoC container to resolve the controller
 	 */
 	public function __construct(
 		IControllerIdentifier	$controllerIdentifier,
@@ -73,8 +73,8 @@ implements IDispatchable
 	 * running them whilst passing output from
 	 * both to the provided response object
 	 * 
-	 * @param  Suburb\Application   $application An application object to pass to the controller
-	 * @param  Suburb\Http\Response $response    A response object which will be set during dispatch
+	 * @param  PO\Application   $application An application object to pass to the controller
+	 * @param  PO\Http\Response $response    A response object which will be set during dispatch
 	 * @return null
 	 */
 	public function dispatch(Application $application, Response $response)

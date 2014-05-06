@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc\Controller;
+namespace PO\Application\Dispatchable\Mvc\Controller;
 
-use Suburb\Application;
-use Suburb\Application\Dispatchable\Mvc\Controller;
+use PO\Application;
+use PO\Application\Dispatchable\Mvc\Controller;
 
 class AgeGate
 extends Controller

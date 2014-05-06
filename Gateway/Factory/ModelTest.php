@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Gateway\Factory;
+namespace PO\Gateway\Factory;
 
 require_once dirname(__FILE__) . '/../IFactory.php';
 require_once dirname(__FILE__) . '/Model.php';
@@ -19,12 +19,12 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		$this->mBuildMapContributor = $this->getMock(
-			'\Suburb\Gateway\Factory\Model\IBuildMapContributor'
+			'\PO\Gateway\Factory\Model\IBuildMapContributor'
 		);
 		$this->mDismantleContributor = $this->getMock(
-			'\Suburb\Gateway\Factory\Model\IDismantleContributor'
+			'\PO\Gateway\Factory\Model\IDismantleContributor'
 		);
-		$this->mObject = $this->getMock('\Suburb\Gateway\Factory\ModelTestObject');
+		$this->mObject = $this->getMock('\PO\Gateway\Factory\ModelTestObject');
 		parent::setUp();
 	}
 	
@@ -36,12 +36,12 @@ extends \PHPUnit_Framework_TestCase {
 		parent::tearDown();
 	}
 	
-	// @todo Should only work with instances of Suburb\Model but there are issues testing that
+	// @todo Should only work with instances of PO\Model but there are issues testing that
 	
 	public function testModelFactoryCanBeInstantiated()
 	{
-		$factory = new Model('\Suburb\Gateway\Factory\ModelTestObject');
-		$this->assertInstanceOf('\Suburb\Gateway\Factory\Model', $factory);
+		$factory = new Model('\PO\Gateway\Factory\ModelTestObject');
+		$this->assertInstanceOf('\PO\Gateway\Factory\Model', $factory);
 	}
 	
 	public function testFactoryRequiresClassName()
@@ -51,7 +51,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testDataIsPassedToObjectAsItIsCreated()
 	{
-		$factory = new Model('\Suburb\Gateway\Factory\ModelTestObject');
+		$factory = new Model('\PO\Gateway\Factory\ModelTestObject');
 		$object = $factory->build(['key' => 'value']);
 		$this->assertEquals(['key' => 'value'], $object->data);
 	}
@@ -62,7 +62,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getMap');
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$factory->build(['id' => 1]);
@@ -70,13 +70,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testBuildMapMustReturnArrayOrNull()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Factory\Model\Exception');
+		$this->setExpectedException('\PO\Gateway\Factory\Model\Exception');
 		$this->mBuildMapContributor
 			->expects($this->once())
 			->method('getMap')
 			->will($this->returnValue('string'));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$factory->build(['id' => 1]);
@@ -84,13 +84,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testBuildMapMustReturnAssociativeArray()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Factory\Model\Exception');
+		$this->setExpectedException('\PO\Gateway\Factory\Model\Exception');
 		$this->mBuildMapContributor
 			->expects($this->once())
 			->method('getMap')
 			->will($this->returnValue(['one', 'two']));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$factory->build(['id' => 1]);
@@ -103,7 +103,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMap')
 			->will($this->returnValue(['originalKey' => 'newKey']));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$object = $factory->build(['originalKey' => 'value']);
@@ -117,14 +117,14 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMap')
 			->will($this->returnValue(['originalKeyOne' => 'newKeyOne']));
 		$mBuildMapContributor2 = $this->getMock(
-			'\Suburb\Gateway\Factory\Model\IBuildMapContributor'
+			'\PO\Gateway\Factory\Model\IBuildMapContributor'
 		);
 		$mBuildMapContributor2
 			->expects($this->once())
 			->method('getMap')
 			->will($this->returnValue(['originalKeyTwo' => 'newKeyTwo']));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor, $mBuildMapContributor2]
 		);
 		$object = $factory->build(['originalKeyOne' => 'value', 'originalKeyTwo' => 'value']);
@@ -141,7 +141,7 @@ extends \PHPUnit_Framework_TestCase {
 				'otherOriginalKey'	=> 'newKey'
 			]));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$object = $factory->build(['otherOriginalKey' => 'value']);
@@ -150,7 +150,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfDuplicateTargetKeysAreUsed()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Factory\Model\Exception');
+		$this->setExpectedException('\PO\Gateway\Factory\Model\Exception');
 		$this->mBuildMapContributor
 			->expects($this->once())
 			->method('getMap')
@@ -159,7 +159,7 @@ extends \PHPUnit_Framework_TestCase {
 				'otherOriginalKey'	=> 'newKey'
 			]));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$object = $factory->build([
@@ -171,7 +171,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testUnderscoredKeysAreConvertedToCamelCase()
 	{
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			[$this->mBuildMapContributor]
 		);
 		$object = $factory->build(['under_scored_key' => 'value']);
@@ -184,7 +184,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('propertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
-		$factory = new Model('\Suburb\Gateway\Factory\ModelTestObject');
+		$factory = new Model('\PO\Gateway\Factory\ModelTestObject');
 		$factory->dismantle($this->mObject);
 	}
 	
@@ -202,7 +202,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->at(2))
 			->method('getPropertyTwo')
 			->will($this->returnValue('value 2'));
-		$factory = new Model('\Suburb\Gateway\Factory\ModelTestObject');
+		$factory = new Model('\PO\Gateway\Factory\ModelTestObject');
 		$this->assertEquals(
 			['property_one' => 'value 1', 'property_two' => 'value 2'],
 			$factory->dismantle($this->mObject)
@@ -235,7 +235,7 @@ extends \PHPUnit_Framework_TestCase {
 				'property_two' => 'std object derived value'
 			]));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			null,
 			[$this->mDismantleContributor]
 		);
@@ -271,7 +271,7 @@ extends \PHPUnit_Framework_TestCase {
 				'property_one' => 'value 1'
 			]));
 		$dismantleContributor2 = $this->getMock(
-			'\Suburb\Gateway\Factory\Model\IDismantleContributor'
+			'\PO\Gateway\Factory\Model\IDismantleContributor'
 		);
 		$dismantleContributor2
 			->expects($this->once())
@@ -284,7 +284,7 @@ extends \PHPUnit_Framework_TestCase {
 				'property_two' => 'value 2'
 			]));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			null,
 			[$this->mDismantleContributor, $dismantleContributor2]
 		);
@@ -296,7 +296,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfObjectIsNotWrittenByDismantleContributor()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Factory\Model\Exception');
+		$this->setExpectedException('\PO\Gateway\Factory\Model\Exception');
 		$this->mObject
 			->expects($this->at(0))
 			->method('propertyNames')
@@ -314,7 +314,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('dismantle')
 			->will($this->returnValue(null));
 		$factory = new Model(
-			'\Suburb\Gateway\Factory\ModelTestObject',
+			'\PO\Gateway\Factory\ModelTestObject',
 			null,
 			[$this->mDismantleContributor]
 		);

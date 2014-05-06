@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
 require_once 'vfsStream/vfsStream.php';
 require_once dirname(__FILE__) . '/../../Application.php';
@@ -31,7 +31,7 @@ extends \PHPUnit_Framework_TestCase {
 			$classParts = explode('\\', $class);
 			if (array_shift($classParts) != 'TestNamespace') return;
 			$path = \vfsStream::url(
-				'SuburbApplicationDispatchableMvcTest/' . implode('/', $classParts) . '.php'
+				'POApplicationDispatchableMvcTest/' . implode('/', $classParts) . '.php'
 			);
 			if (file_exists($path)) include_once $path;
 		});
@@ -39,7 +39,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->virtualDir = \vfsStream::setup('SuburbApplicationDispatchableMvcTest', null, array(
+		$this->virtualDir = \vfsStream::setup('POApplicationDispatchableMvcTest', null, array(
 			//'Index.php' => $this->writeClass('Index')/*,
 			'Test.php' => $this->writeClass('Test'),
 			'IoCTest.php' => $this->writeClass('IoCTest'),
@@ -53,19 +53,19 @@ extends \PHPUnit_Framework_TestCase {
 			
 		));
 		$this->mControllerIdentifier = $this->getMock(
-			'\Suburb\Application\Dispatchable\Mvc\IControllerIdentifier'
+			'\PO\Application\Dispatchable\Mvc\IControllerIdentifier'
 		);
 		$this->mApplication = $this->getMock(
-			'\Suburb\Application',
+			'\PO\Application',
 			array(),
 			array(
-				$this->getMock('\Suburb\Application\IDispatchable'),
-				$this->getMock('\Suburb\Http\Response')
+				$this->getMock('\PO\Application\IDispatchable'),
+				$this->getMock('\PO\Http\Response')
 			)
 		);
-		$this->mResponse = $this->getMock('\Suburb\Http\Response');
-		$this->mErrorHandler = $this->getMock('\Suburb\Application\IErrorHandler');
-		$this->mException = $this->getMock('\Suburb\Application\Dispatchable\MvcTestException');
+		$this->mResponse = $this->getMock('\PO\Http\Response');
+		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
+		$this->mException = $this->getMock('\PO\Application\Dispatchable\MvcTestException');
 		$_SERVER['REQUEST_URI'] = '/';
 		parent::setUp();
 	}
@@ -83,7 +83,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testDispatchableCanBeInstantiated()
 	{
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$this->assertInstanceOf('\Suburb\Application\Dispatchable\Mvc', $dispatchable);
+		$this->assertInstanceOf('\PO\Application\Dispatchable\Mvc', $dispatchable);
 	}
 	
 	public function testDispatchableRequiresInstanceOfIControllerIdentifier()
@@ -145,7 +145,7 @@ extends \PHPUnit_Framework_TestCase {
 
 	public function testExceptionIsThrownIfControllerClassDoesNotExist()
 	{
-		$this->setExpectedException('\Suburb\Application\Dispatchable\Mvc\Exception');
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
@@ -156,7 +156,7 @@ extends \PHPUnit_Framework_TestCase {
 
 	public function testExceptionIsThrownIfControllerClassIsNotInstanceOfController()
 	{
-		$this->setExpectedException('\Suburb\Application\Dispatchable\Mvc\Exception');
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
@@ -204,7 +204,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfPathVariablesIsNotArray()
 	{
-		$this->setExpectedException('\Suburb\Application\Dispatchable\Mvc\Exception');
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
 		$this->mControllerIdentifier
 			->expects($this->any())
 			->method('getControllerClass')
@@ -219,7 +219,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfPathVariablesIsNotAssociative()
 	{
-		$this->setExpectedException('\Suburb\Application\Dispatchable\Mvc\Exception');
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
 		$this->mControllerIdentifier
 			->expects($this->any())
 			->method('getControllerClass')
@@ -260,7 +260,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/Test.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/Test.phtml')
 			));
 		$this->mResponse
 			->expects($this->atLeastOnce())
@@ -272,7 +272,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfTemplateFileDoesNotExist()
 	{
-		$this->setExpectedException('\Suburb\Application\Dispatchable\Mvc\Exception');
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
@@ -281,7 +281,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/NonExistant.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/NonExistant.phtml')
 			));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
@@ -293,7 +293,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/Test.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/Test.phtml')
 			));
 		$this->mResponse
 			->expects($this->atLeastOnce())
@@ -313,7 +313,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/TestWithContent.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/TestWithContent.phtml')
 			));
 		$this->mResponse
 			->expects($this->atLeastOnce())
@@ -325,7 +325,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testControllerIsResolvedThroughIoCContainerIfProvided()
 	{
-		$mIoCContainer = $this->getMock('\Suburb\IoCContainer');
+		$mIoCContainer = $this->getMock('\PO\IoCContainer');
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
@@ -346,7 +346,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testControllerAcceptsOptionalIErrorHandler()
 	{
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$this->assertInstanceOf('\Suburb\Application\Dispatchable\Mvc', $dispatchable);
+		$this->assertInstanceOf('\PO\Application\Dispatchable\Mvc', $dispatchable);
 	}
 	
 	public function testIErrorHandlerSetupMethodIsCalled()
@@ -376,7 +376,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->at(1))
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\MvcTestException'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -395,7 +395,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\MvcTestException'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -410,7 +410,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/ExceptionTemplate.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/ExceptionTemplate.phtml')
 			));
 		$this->mErrorHandler
 			->expects($this->once())
@@ -429,7 +429,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -443,7 +443,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -458,12 +458,12 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getTemplatePath')
 			->will($this->returnValue(
-				\vfsStream::url('SuburbApplicationDispatchableMvcTest/NonExistant.phtml')
+				\vfsStream::url('POApplicationDispatchableMvcTest/NonExistant.phtml')
 			));
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -482,7 +482,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'));
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
 		$dispatchable->dispatch($this->mApplication, $this->mResponse);
 	}
@@ -493,7 +493,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('handleException')
 			->with(
-				$this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'),
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
 				404
 			);
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
@@ -509,7 +509,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('handleException')
 			->with(
-				$this->isInstanceOf('\Suburb\Application\Dispatchable\Mvc\Exception'),
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
 				404
 			);
 		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
@@ -566,9 +566,9 @@ extends \PHPUnit_Framework_TestCase {
 		return <<<CLASS
 <?php
 namespace TestNamespace;
-		use \Suburb\Application;
-		use \Suburb\Application\Dispatchable;
-		use \Suburb\Application\Dispatchable\Mvc\Controller;
+		use \PO\Application;
+		use \PO\Application\Dispatchable;
+		use \PO\Application\Dispatchable\Mvc\Controller;
 		class $className
 		extends Controller
 		{

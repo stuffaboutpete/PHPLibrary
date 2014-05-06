@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const NON_ICONSTRAINT_PROVIDED						= 0;
@@ -17,7 +17,7 @@ extends \Suburb\Exception
 			
 			case Exception::NON_ICONSTRAINT_PROVIDED:
 				return 'A constraint was provided that does not ' .
-					'implement Suburb\Model\Property\IConstraint';
+					'implement PO\Model\Property\IConstraint';
 			break;
 			
 			case Exception::CONSTRAINT_RETURNED_NON_FALSE_FROM_IS_VALID:

@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
-use Suburb\Model\Property;
+use PO\Model\Property;
 
 class DateTime
 extends Property

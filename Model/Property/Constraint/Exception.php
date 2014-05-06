@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
+namespace PO\Model\Property\Constraint;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const INCOMPATIBLE_TYPE					= 0;

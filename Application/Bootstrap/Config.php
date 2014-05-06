@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
-use Suburb\Application;
-use Suburb\Application\IBootstrap;
+use PO\Application;
+use PO\Application\IBootstrap;
 
 class Config
 implements IBootstrap
@@ -23,7 +23,7 @@ implements IBootstrap
 		if (!isset($this->pathToConfig)) return;
 		$application->extend(
 			'config',
-			new \Suburb\Config(file_get_contents($this->pathToConfig), $this->environments)
+			new \PO\Config(file_get_contents($this->pathToConfig), $this->environments)
 		);
 	}
 	

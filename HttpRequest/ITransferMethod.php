@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest;
+namespace PO\HttpRequest;
 
 interface ITransferMethod
 {
@@ -8,7 +8,7 @@ interface ITransferMethod
 	public function request(
 		/* string */					$path,
 		/* string */					$method,
-		\Suburb\HttpRequest\Response	$response,
+		\PO\HttpRequest\Response	$response,
 		array							$headers = null,
 		/* mixed */						$data = null
 	);

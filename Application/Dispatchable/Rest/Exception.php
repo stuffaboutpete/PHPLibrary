@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Rest;
+namespace PO\Application\Dispatchable\Rest;
 
 class Exception
 extends \Exception

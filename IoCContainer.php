@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
-use Suburb\IoCContainer\IContainment;
+use PO\IoCContainer\IContainment;
 
 /**
  * IoCContainer
@@ -54,8 +54,8 @@ class IoCContainer
 	 * IContainment which are run whilst
 	 * being provided with an instance of $this
 	 * 
-	 * @param  Suburb\IoCContainer\IContainment optional A containment to be run
-	 * @param  Suburb\IoCContainer\IContainment optional [A containment to be run...]
+	 * @param  PO\IoCContainer\IContainment optional A containment to be run
+	 * @param  PO\IoCContainer\IContainment optional [A containment to be run...]
 	 * @return null
 	 */
 	public function __construct()
@@ -283,7 +283,7 @@ class IoCContainer
 	 * 
 	 * @param  string   $alias        The alias to be used when resolving the callback
 	 * @param  callable $callback     The callback
-	 * @return Suburb\IoCContainer    $this
+	 * @return PO\IoCContainer    $this
 	 * @throws BadMethodCallException If method is called statically
 	 */
 	public function registerCallback($alias, callable $callback)
@@ -309,7 +309,7 @@ class IoCContainer
 	 * when an object of its type is required
 	 * 
 	 * @param  object $object           The object to be used as a singleton
-	 * @return Suburb\IoCContainer      $this
+	 * @return PO\IoCContainer      $this
 	 * @throws BadMethodCallException   If method is called statically
 	 * @throws InvalidArgumentException If a non object is supplied
 	 * @throws RuntimeException         If a singleton of this type has already been registered
@@ -350,7 +350,7 @@ class IoCContainer
 	 * 
 	 * @param  string $interface The interface name
 	 * @param  string $className The class name
-	 * @return Suburb\IoCContainer $this
+	 * @return PO\IoCContainer $this
 	 * @throws BadMethodCallException   If method is called statically
 	 * @throws InvalidArgumentException If class does not implement interface
 	 */

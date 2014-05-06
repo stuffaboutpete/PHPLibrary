@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\TokenValidator;
+namespace PO\HttpRequest\Api\TokenValidator;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const NON_STRING_TOKEN_SUPPLIED								= 0;

@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\IoCContainer\Containment;
+namespace PO\IoCContainer\Containment;
 
-use Suburb\IoCContainer;
-use Suburb\IoCContainer\IContainment;
+use PO\IoCContainer;
+use PO\IoCContainer\IContainment;
 
 class HttpRequest
 implements IContainment
@@ -13,8 +13,8 @@ implements IContainment
 	{
 		
 		$container->registerInterface(
-			'Suburb\\HttpRequest\\ITransferMethod',
-			'Suburb\\HttpRequest\\TransferMethod\\Curl'
+			'PO\\HttpRequest\\ITransferMethod',
+			'PO\\HttpRequest\\TransferMethod\\Curl'
 		);
 		
 	}

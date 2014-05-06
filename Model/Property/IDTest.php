@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
 require_once dirname(__FILE__) . '/../Property.php';
 require_once dirname(__FILE__) . '/Integer.php';
@@ -12,7 +12,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPropertyCanBeInstantiated()
 	{
 		$property = new ID();
-		$this->assertInstanceOf('Suburb\\Model\\Property\\ID', $property);
+		$this->assertInstanceOf('PO\\Model\\Property\\ID', $property);
 	}
 	
 	public function testNegativeIntegerThrowsInteger()

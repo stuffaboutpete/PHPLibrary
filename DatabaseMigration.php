@@ -2,7 +2,7 @@
 
 $pdo = new \PDO(/*...*/);
 
-$migration = new \Suburb\DatabaseMigration(
+$migration = new \PO\DatabaseMigration(
 	$pdo,
 	'/path/to/folder'
 );

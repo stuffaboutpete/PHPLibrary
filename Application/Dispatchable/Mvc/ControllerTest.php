@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc;
+namespace PO\Application\Dispatchable\Mvc;
 
 require_once dirname(__FILE__) . '/Controller.php';
 require_once dirname(__FILE__) . '/../../../Application.php';
@@ -21,10 +21,10 @@ extends \PHPUnit_Framework_TestCase {
 	public function testControllerCanBeInstantiated()
 	{
 		$controller = $this->getMockForAbstractClass(
-			'Suburb\Application\Dispatchable\Mvc\Controller'
+			'PO\Application\Dispatchable\Mvc\Controller'
 		);
 		$this->assertInstanceOf(
-			'Suburb\Application\Dispatchable\Mvc\Controller',
+			'PO\Application\Dispatchable\Mvc\Controller',
 			$controller
 		);
 	}

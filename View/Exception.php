@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\View;
+namespace PO\View;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const TEMPLATE_PATH_NOT_STRING					= 0;

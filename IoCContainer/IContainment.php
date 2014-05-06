@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\IoCContainer;
+namespace PO\IoCContainer;
 
-use Suburb\IoCContainer;
+use PO\IoCContainer;
 
 interface IContainment
 {

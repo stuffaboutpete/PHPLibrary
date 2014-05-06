@@ -1,7 +1,7 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
-use Suburb\Model as Model;
+namespace PO\Model\Property\Constraint;
+use PO\Model as Model;
 
 require_once dirname(__FILE__) . '/../IConstraint.php';
 

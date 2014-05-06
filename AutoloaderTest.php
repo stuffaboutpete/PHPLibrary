@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/Autoloader.php';
 

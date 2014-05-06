@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
 require_once dirname(__FILE__) . '/../IBootstrap.php';
 require_once dirname(__FILE__) . '/Pdo.php';
@@ -21,7 +21,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPdoBootstrapCanBeInstantiated()
 	{
 		$pdoBootstrap = new Pdo();
-		$this->assertInstanceOf('\\Suburb\\Application\\Bootstrap\\Pdo', $pdoBootstrap);
+		$this->assertInstanceOf('\\PO\\Application\\Bootstrap\\Pdo', $pdoBootstrap);
 	}
 	
 }

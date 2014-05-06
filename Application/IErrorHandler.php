@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application;
+namespace PO\Application;
 
-use Suburb\Application;
-use Suburb\Http\Response;
+use PO\Application;
+use PO\Http\Response;
 
 interface IErrorHandler
 {

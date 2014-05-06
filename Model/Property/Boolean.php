@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
-use Suburb\Model\Property;
+use PO\Model\Property;
 
 /**
- * Suburb\Model\Property\Boolean
+ * PO\Model\Property\Boolean
  * 
  * An implementation of a Property
  * which will only hold a boolean value

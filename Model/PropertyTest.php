@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model;
+namespace PO\Model;
 
 require_once dirname(__FILE__) . '/Property.php';
 require_once dirname(__FILE__) . '/Property/IConstraint.php';
@@ -17,10 +17,10 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mProperty = $this->getMockForAbstractClass('Suburb\Model\Property');
-		$this->mConstraint = $this->getMock('Suburb\Model\Property\IConstraint');
-		$this->mConstraint2 = $this->getMock('Suburb\Model\Property\IConstraint');
-		$this->mConstraint3 = $this->getMock('Suburb\Model\Property\IConstraint');
+		$this->mProperty = $this->getMockForAbstractClass('PO\Model\Property');
+		$this->mConstraint = $this->getMock('PO\Model\Property\IConstraint');
+		$this->mConstraint2 = $this->getMock('PO\Model\Property\IConstraint');
+		$this->mConstraint3 = $this->getMock('PO\Model\Property\IConstraint');
 		parent::setUp();
 	}
 	
@@ -73,16 +73,16 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPropertyAcceptsSingleConstraint()
 	{
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint]]
 		);
 	}
 	
 	public function testOnlyInstancesOfIConstraintAreAllowedAsConstraints()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Exception');
+		$this->setExpectedException('\PO\Model\Property\Exception');
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[new \stdClass]]
 		);
 	}
@@ -95,7 +95,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with('Value')
 			->will($this->returnValue(true));
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint]]
 		);
 		$mProperty->set('Value');
@@ -108,7 +108,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isValid')
 			->will($this->returnValue(true));
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint]]
 		);
 		$mProperty->expects($this->once())
@@ -123,13 +123,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testPropertyExpectsConstraintToThrowExceptionWhenValueDoesNotMeetConstraint()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Exception');
+		$this->setExpectedException('\PO\Model\Property\Exception');
 		$this->mConstraint
 			->expects($this->once())
 			->method('isValid')
 			->will($this->returnValue(false));
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint]]
 		);
 		$mProperty->set('Invalid Value');
@@ -138,7 +138,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPropertyAcceptsMultipleConstraints()
 	{
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint, $this->mConstraint2, $this->mConstraint3]]
 		);
 	}
@@ -161,7 +161,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with('Value')
 			->will($this->returnValue(true));
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint, $this->mConstraint2, $this->mConstraint3]]
 		);
 		$mProperty->set('Value');
@@ -182,7 +182,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isValid')
 			->will($this->returnValue(true));
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint, $this->mConstraint2, $this->mConstraint3]]
 		);
 		$mProperty->expects($this->once())
@@ -197,7 +197,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testPropertyThrowsExceptionWhenValueDoesNotMeetAConstraint()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Exception');
+		$this->setExpectedException('\PO\Model\Property\Exception');
 		$this->mConstraint
 			->expects($this->once())
 			->method('isValid')
@@ -211,7 +211,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isValid')
 			->will($this->returnValue(false));
 		$mProperty = $this->getMockForAbstractClass(
-				'Suburb\Model\Property',
+				'PO\Model\Property',
 				[[$this->mConstraint, $this->mConstraint2, $this->mConstraint3]]
 		);
 		$mProperty->set('Invalid Value');
@@ -228,7 +228,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->never())
 			->method('isValid');
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[[$this->mConstraint]]
 		);
 		$mProperty->set(null);
@@ -236,9 +236,9 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testPropertyCannotBeSetToNullIfSpecified()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\Exception');
+		$this->setExpectedException('\PO\Model\Property\Exception');
 		$mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[null, false]
 		);
 		$mProperty->set(null);

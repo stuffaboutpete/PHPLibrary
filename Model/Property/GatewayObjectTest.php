@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
 require_once dirname(__FILE__) . '/../Property.php';
 require_once dirname(__FILE__) . '/../../Model.php';
@@ -18,7 +18,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		$this->mProperty = $this->getMockForAbstractClass(
-			'\Suburb\Model\Property',
+			'\PO\Model\Property',
 			[],
 			'',
 			true,
@@ -26,10 +26,10 @@ extends \PHPUnit_Framework_TestCase {
 			true,
 			['set', 'get']
 		);
-		$this->mModel = $this->getMockBuilder('\Suburb\Model')
+		$this->mModel = $this->getMockBuilder('\PO\Model')
 			->disableOriginalConstructor()
 			->getMock();
-		$this->mGateway = $this->getMock('\Suburb\Gateway', ['fetch']);
+		$this->mGateway = $this->getMock('\PO\Gateway', ['fetch']);
 		parent::setUp();
 	}
 	
@@ -53,16 +53,16 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPropertyCanBeInstantiated()
 	{
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
-		$this->assertInstanceOf('Suburb\Model\Property\GatewayObject', $property);
+		$this->assertInstanceOf('PO\Model\Property\GatewayObject', $property);
 	}
 	
 	public function testPropertyRequiresClassName()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\GatewayObject\Exception');
+		$this->setExpectedException('\PO\Model\Property\GatewayObject\Exception');
 		$property = new GatewayObject(
 			'\InvalidClass',
 			$this->mProperty,
@@ -74,7 +74,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			null,
 			$this->mGateway
 		);
@@ -84,7 +84,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty
 		);
 	}
@@ -97,7 +97,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with(10)
 			->will($this->returnValue($this->mProperty));
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -112,7 +112,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('set')
 			->will($this->throwException(new \Exception('Value not valid')));
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -125,7 +125,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->never())
 			->method('set');
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -135,7 +135,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testInstanceOfNominatedClassCanBeRetrieved()
 	{
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -145,12 +145,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfObjectNotOfNominatedClassIsProvided()
 	{
-		$this->setExpectedException('\Suburb\Model\Property\GatewayObject\Exception');
+		$this->setExpectedException('\PO\Model\Property\GatewayObject\Exception');
 		$this->mProperty
 			->expects($this->never())
 			->method('set');
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -171,10 +171,10 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mGateway
 			->expects($this->once())
 			->method('fetch')
-			->with('Suburb\Model', 10)
+			->with('PO\Model', 10)
 			->will($this->returnValue($this->mModel));
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -196,10 +196,10 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mGateway
 			->expects($this->once())
 			->method('fetch')
-			->with('Suburb\Model', 10)
+			->with('PO\Model', 10)
 			->will($this->returnValue($this->mModel));
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);
@@ -231,15 +231,15 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mGateway
 			->expects($this->at(0))
 			->method('fetch')
-			->with('Suburb\Model', 10)
+			->with('PO\Model', 10)
 			->will($this->returnValue($this->mModel));
 		$this->mGateway
 			->expects($this->at(1))
 			->method('fetch')
-			->with('Suburb\Model', 11)
+			->with('PO\Model', 11)
 			->will($this->returnValue($this->mModel));
 		$property = new GatewayObject(
-			'\Suburb\Model',
+			'\PO\Model',
 			$this->mProperty,
 			$this->mGateway
 		);

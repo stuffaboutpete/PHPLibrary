@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb\Application\ErrorHandler\View;
+namespace PO\Application\ErrorHandler\View;
 
-use Suburb\Application;
-use Suburb\Http\Response;
-use Suburb\Application\ErrorHandler\View as DebugView;
+use PO\Application;
+use PO\Http\Response;
+use PO\Application\ErrorHandler\View as DebugView;
 
 class Hybrid
 implements Application\IErrorHandler

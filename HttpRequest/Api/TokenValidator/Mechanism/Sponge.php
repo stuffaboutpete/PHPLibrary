@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\TokenValidator\Mechanism;
+namespace PO\HttpRequest\Api\TokenValidator\Mechanism;
 
-use Suburb\Gateway;
-use Suburb\HttpRequest\Api\TokenValidator\IMechanism;
-use Suburb\HttpRequest\Response;
-use Suburb\HttpRequest\Api\TokenValidator\Mechanism\Exception;
+use PO\Gateway;
+use PO\HttpRequest\Api\TokenValidator\IMechanism;
+use PO\HttpRequest\Response;
+use PO\HttpRequest\Api\TokenValidator\Mechanism\Exception;
 
 class Sponge
 implements IMechanism

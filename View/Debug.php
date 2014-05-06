@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\View;
+namespace PO\View;
 
 class Debug
-extends \Suburb\View
+extends \PO\View
 {
 	
 	public function __construct(\Exception $exception = null, $error = null, $responseCode = 500)

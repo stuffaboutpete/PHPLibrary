@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc;
+namespace PO\Application\Dispatchable\Mvc;
 
-use Suburb\Application;
+use PO\Application;
 
 abstract class Controller
 {

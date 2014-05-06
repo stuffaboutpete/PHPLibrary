@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
-use Suburb\Application\IDispatchable;
-use Suburb\Application\IBootstrap;
-use Suburb\Application\IErrorLogger;
-use Suburb\Http\Response;
+use PO\Application\IDispatchable;
+use PO\Application\IBootstrap;
+use PO\Application\IErrorLogger;
+use PO\Http\Response;
 
 /**
  * Needs re-commenting
@@ -23,14 +23,14 @@ class Application
 	/**
 	 * A dispatchable
 	 * 
-	 * @var Suburb\Application\IDispatchable
+	 * @var PO\Application\IDispatchable
 	 */
 	private $dispatchable;
 	
 	/**
 	 * A response object
 	 * 
-	 * @var Suburb\Http\Response
+	 * @var PO\Http\Response
 	 */
 	private $response;
 	
@@ -38,7 +38,7 @@ class Application
 	 * Array of bootstrap objects
 	 * 
 	 * Holds only instances of
-	 * Suburb\Application\IBootstrap
+	 * PO\Application\IBootstrap
 	 * 
 	 * @var [type]
 	 */
@@ -57,8 +57,8 @@ class Application
 	 * Inject a dispatchable object, a response
 	 * object and any number of bootstrap objects
 	 * 
-	 * @param  Suburb\Application\IDispatchable $dispatchable An object which will be dispatched
-	 * @param  Suburb\Http\Response             $response     Will be set during dispatch
+	 * @param  PO\Application\IDispatchable $dispatchable An object which will be dispatched
+	 * @param  PO\Http\Response             $response     Will be set during dispatch
 	 * @param  array                            $bootstraps   Processed before dispatch
 	 * @return null
 	 * @throws InvalidArgumentException         If non IBootstrap provided
@@ -77,7 +77,7 @@ class Application
 			if (!$bootstrap instanceof IBootstrap) {
 				throw new \InvalidArgumentException(
 					'Bootstraps must be an array containing only ' .
-					'instance of \Suburb\Application\IBootstrap'
+					'instance of \PO\Application\IBootstrap'
 				);
 			}
 		}
@@ -95,7 +95,7 @@ class Application
 	 * bootstraps, dispatching the IDispatchable
 	 * and then processing the response
 	 * 
-	 * @return Suburb\Application Self
+	 * @return PO\Application Self
 	 * @throws RuntimeException   If response is not initialised by dispatchable
 	 */
 	public function run()
@@ -148,7 +148,7 @@ class Application
 	 * @param  string $key         The alias for the extension
 	 * @param  mixed  $value       Any data or callback which can be retrieved against the key
 	 * @param  mixed  $callbackArg Data to be passed to the value if it is a callback
-	 * @return Suburb\Application  Self
+	 * @return PO\Application  Self
 	 */
 	public function extend($key, $value, $callbackArg = null)
 	{

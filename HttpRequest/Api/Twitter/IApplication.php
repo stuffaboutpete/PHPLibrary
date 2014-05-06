@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\Twitter;
+namespace PO\HttpRequest\Api\Twitter;
 
 interface IApplication
 {

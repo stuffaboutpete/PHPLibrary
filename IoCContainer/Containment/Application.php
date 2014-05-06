@@ -1,14 +1,14 @@
 <?php
 
-namespace Suburb\IoCContainer\Containment;
+namespace PO\IoCContainer\Containment;
 
-use Suburb\IoCContainer;
-use Suburb\IoCContainer\IContainment;
-use Suburb\Application\Dispatchable\Mvc;
-use Suburb\Application\Dispatchable\Rest;
-use Suburb\Application\Bootstrap;
-use Suburb\Http\Response;
-use Suburb\Config;
+use PO\IoCContainer;
+use PO\IoCContainer\IContainment;
+use PO\Application\Dispatchable\Mvc;
+use PO\Application\Dispatchable\Rest;
+use PO\Application\Bootstrap;
+use PO\Http\Response;
+use PO\Config;
 
 class Application
 implements IContainment
@@ -28,7 +28,7 @@ implements IContainment
 	{
 		
 		$this->container->registerCallback(
-			'Suburb\\Application\\Mvc',
+			'PO\\Application\\Mvc',
 			function(
 				$container,
 				$controllersNamespace,
@@ -40,7 +40,7 @@ implements IContainment
 				$customErrorView = null
 			){
 				
-				return new \Suburb\Application(
+				return new \PO\Application(
 					new Mvc(
 						new Mvc\ControllerIdentifier\FolderStructure(
 							$controllersNamespace,
@@ -48,14 +48,14 @@ implements IContainment
 						),
 						$container,
 						(isset($customErrorView))
-							? new \Suburb\Application\ErrorHandler\View\Hybrid($customErrorView)
-							: new \Suburb\Application\ErrorHandler\View()
+							? new \PO\Application\ErrorHandler\View\Hybrid($customErrorView)
+							: new \PO\Application\ErrorHandler\View()
 					),
 					new Response(),
 					array_merge([
 						new Bootstrap\Config($pathToConfig, $environments),
 						new Bootstrap\Pdo(),
-						new Bootstrap\Authenticator(new \Suburb\Helper\Cookie()),
+						new Bootstrap\Authenticator(new \PO\Helper\Cookie()),
 						new Bootstrap\AccessController($accessControllerRules)
 					], $bootstraps)
 				);
@@ -69,10 +69,10 @@ implements IContainment
 	{
 		
 		$this->container->registerCallback(
-			'Suburb\\Application\\Rest',
+			'PO\\Application\\Rest',
 			function($container, $pathToRoutesConfig, $pathToConfig = null){
 				
-				return new \Suburb\Application(
+				return new \PO\Application(
 					new Rest(
 						new Config(file_get_contents($pathToRoutesConfig))
 					),
@@ -92,10 +92,10 @@ implements IContainment
 	{
 		
 		$this->container->registerCallback(
-			'Suburb\\Application\\MvcWithRest',
+			'PO\\Application\\MvcWithRest',
 			function($container){
 				
-				return new \Suburb\Application(
+				return new \PO\Application(
 					// ...
 				);
 				

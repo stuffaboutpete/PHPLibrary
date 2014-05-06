@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
 interface IConstraint
 {

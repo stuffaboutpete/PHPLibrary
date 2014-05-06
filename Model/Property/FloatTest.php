@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
 require_once dirname(__FILE__) . '/../Property.php';
 require_once dirname(__FILE__) . '/Float.php';
@@ -13,7 +13,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPropertyCanBeInstantiated()
 	{
 		$property = new Float(6, 2);
-		$this->assertInstanceOf('Suburb\\Model\\Property\\Float', $property);
+		$this->assertInstanceOf('PO\\Model\\Property\\Float', $property);
 	}
 	
 	public function testFloatValueCanBeSetAndRetrieved()

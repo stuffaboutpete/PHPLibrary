@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
-use Suburb\Gateway\IFactory;
-use Suburb\Gateway\IQueryProvider;
-use Suburb\Gateway\Collection;
-use Suburb\Helper\ArrayType;
+use PO\Gateway\IFactory;
+use PO\Gateway\IQueryProvider;
+use PO\Gateway\Collection;
+use PO\Helper\ArrayType;
 
 class Gateway
 {

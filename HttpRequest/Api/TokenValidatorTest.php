@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\HttpRequest\Api;
+namespace PO\HttpRequest\Api;
 
 require_once dirname(__FILE__) . '/../../HttpRequest.php';
 require_once dirname(__FILE__) . '/TokenValidator.php';
@@ -19,10 +19,10 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mTransferMethod = $this->getMock('\Suburb\HttpRequest\ITransferMethod');
-		$this->mResponse = $this->getMock('\Suburb\HttpRequest\Response');
+		$this->mTransferMethod = $this->getMock('\PO\HttpRequest\ITransferMethod');
+		$this->mResponse = $this->getMock('\PO\HttpRequest\Response');
 		$this->mTokenMechanism = $this->getMock(
-			'\Suburb\HttpRequest\Api\TokenValidator\IMechanism'
+			'\PO\HttpRequest\Api\TokenValidator\IMechanism'
 		);
 		parent::setUp();
 	}
@@ -37,18 +37,18 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testTokenValidatorCanBeInstantiated()
 	{
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
 		);
-		$this->assertInstanceOf('\Suburb\HttpRequest\Api\TokenValidator', $validator);
+		$this->assertInstanceOf('\PO\HttpRequest\Api\TokenValidator', $validator);
 	}
 	
 	public function testTokenMechanismIsRequired()
 	{
 		$this->setExpectedException('\PHPUnit_Framework_Error');
-		new \Suburb\HttpRequest\Api\TokenValidator(
+		new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse
 		);
@@ -56,8 +56,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testIsValidTokenRequiresString()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -67,12 +67,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testFieldsProvidedToIsValidTokenShouldMatchRequiredFieldsSuppliedByMechanism()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
 		$this->mTokenMechanism
 			->expects($this->once())
 			->method('getEntryRequiredFields')
 			->will($this->returnValue(['field1', 'field2', 'field3']));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -111,7 +111,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->any())
 			->method('isInitialised')
 			->will($this->returnValue(true));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -124,7 +124,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testEntryResponseIsPassedToMechanismWhichCanThrowError()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
 		$this->mTokenMechanism
 			->expects($this->once())
 			->method('getEntryPath')
@@ -137,8 +137,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('validateEntryResponse')
 			->with($this->mResponse)
-			->will($this->throwException(new \Suburb\HttpRequest\Api\TokenValidator\Exception(99)));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+			->will($this->throwException(new \PO\HttpRequest\Api\TokenValidator\Exception(99)));
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -152,7 +152,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->any())
 			->method('isInitialised')
 			->will($this->returnValue(true));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -162,8 +162,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testIsInstantWinRequiresString()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -173,8 +173,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testAnExceptionIsThrownIfIsInstantWinIsCalledWithUntestedToken()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -196,7 +196,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isInstantWin')
 			->with($this->mResponse)
 			->will($this->returnValue(true));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -219,7 +219,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isInstantWin')
 			->with($this->mResponse)
 			->will($this->returnValue(false));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -230,8 +230,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testAnExceptionIsThrownIfCompleteEntryIsCalledWithUntestedToken()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -241,7 +241,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfEntryIsCompletedWhenNotAnInstantWin()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
 		$this->mTransferMethod
 			->expects($this->once())
 			->method('request');
@@ -254,7 +254,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isInstantWin')
 			->with($this->mResponse)
 			->will($this->returnValue(false));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -265,8 +265,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCompleteEntryRequiresString()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -276,7 +276,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testFieldsProvidedToCompleteEntryShouldMatchRequiredFieldsSuppliedByMechanism()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -290,7 +290,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('getCompletionRequiredFields')
 			->will($this->returnValue(['field1', 'field2', 'field3']));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -332,7 +332,7 @@ extends \PHPUnit_Framework_TestCase {
 				[],
 				'{"field1":"value 1","field2":"value 2","instant_win_id":"12345"}'
 			);
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -343,7 +343,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCompletionResponseIsPassedToMechanismWhichCanThrowError()
 	{
-		$this->setExpectedException('\Suburb\HttpRequest\Api\TokenValidator\Exception');
+		$this->setExpectedException('\PO\HttpRequest\Api\TokenValidator\Exception');
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -357,8 +357,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('validateCompletionResponse')
 			->with($this->mResponse)
-			->will($this->throwException(new \Suburb\HttpRequest\Api\TokenValidator\Exception(99)));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+			->will($this->throwException(new \PO\HttpRequest\Api\TokenValidator\Exception(99)));
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -378,7 +378,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('isInstantWin')
 			->with($this->mResponse)
 			->will($this->returnValue(true));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -411,7 +411,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->any())
 			->method('isInitialised')
 			->will($this->returnValue(true));
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism
@@ -445,7 +445,7 @@ extends \PHPUnit_Framework_TestCase {
 				[],
 				'{"field1":"value 1","field2":"value 2","instant_win_id":"12345"}'
 			);
-		$validator = new \Suburb\HttpRequest\Api\TokenValidator(
+		$validator = new \PO\HttpRequest\Api\TokenValidator(
 			$this->mTransferMethod,
 			$this->mResponse,
 			$this->mTokenMechanism

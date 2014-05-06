@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
-use Suburb\Application;
-use Suburb\Application\IBootstrap;
-use Suburb\Application\Bootstrap\Authenticator\Exception;
-use Suburb\Helper\Cookie as CookieHelper;
+use PO\Application;
+use PO\Application\IBootstrap;
+use PO\Application\Bootstrap\Authenticator\Exception;
+use PO\Helper\Cookie as CookieHelper;
 
 class Authenticator
 implements IBootstrap

@@ -8,15 +8,15 @@
  * This class only exists because the new
  * v1.1 API requires authentication to search.
  * 
- * Once Suburb\HttpRequest\Api\Twitter is
+ * Once PO\HttpRequest\Api\Twitter is
  * developed enough to easily use the new
  * API, this class should be removed.
  */
 
-namespace Suburb\HttpRequest\Api\Twitter;
+namespace PO\HttpRequest\Api\Twitter;
 
 class Search
-extends \Suburb\HttpRequest
+extends \PO\HttpRequest
 {
 	
 	public function __construct($transferMethod, $response)

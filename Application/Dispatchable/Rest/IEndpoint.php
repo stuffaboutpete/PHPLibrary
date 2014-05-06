@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Rest;
+namespace PO\Application\Dispatchable\Rest;
 
-use Suburb\Application;
-use Suburb\Http\Response;
+use PO\Application;
+use PO\Http\Response;
 
 interface IEndpoint
 {

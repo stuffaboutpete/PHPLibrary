@@ -1,12 +1,12 @@
 <?php
 
-namespace Suburb\Gateway;
+namespace PO\Gateway;
 
-use Suburb\Gateway;
-use Suburb\Gateway\Collection;
-use Suburb\Gateway\Collection\Exception;
-use Suburb\Gateway\IFactory;
-use Suburb\Helper\ArrayType;
+use PO\Gateway;
+use PO\Gateway\Collection;
+use PO\Gateway\Collection\Exception;
+use PO\Gateway\IFactory;
+use PO\Helper\ArrayType;
 
 class Collection
 implements \ArrayAccess, \Iterator, \Countable

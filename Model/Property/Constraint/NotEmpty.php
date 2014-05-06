@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\Model\Property\Constraint;
+namespace PO\Model\Property\Constraint;
 
-use Suburb\Model\Property\IConstraint;
+use PO\Model\Property\IConstraint;
 
 class NotEmpty
 implements IConstraint

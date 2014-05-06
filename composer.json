@@ -1,3 +1,6 @@
 {
-	"name": "peteonline/php-library"
+	"name": "peteonline/php-library",
+	"autoload": {
+		"psr-4": {"PO\\": "/"}
+	}
 }

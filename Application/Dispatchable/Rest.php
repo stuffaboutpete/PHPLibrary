@@ -1,12 +1,12 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
-use Suburb\Application;
-use Suburb\Application\IDispatchable;
-use Suburb\Application\Dispatchable\Rest\IEndpoint;
-use Suburb\Config;
-use Suburb\Http\Response;
+use PO\Application;
+use PO\Application\IDispatchable;
+use PO\Application\Dispatchable\Rest\IEndpoint;
+use PO\Config;
+use PO\Http\Response;
 
 /**
  * Rest
@@ -107,8 +107,8 @@ implements IDispatchable
 	 * optional route string is provided it
 	 * should be in the format 'METHOD /path'.
 	 * 
-	 * @param  Suburb\Application   $application    An application object to pass to the endpoint
-	 * @param  Suburb\Http\Response $response       A response object which will be set downstream
+	 * @param  PO\Application   $application    An application object to pass to the endpoint
+	 * @param  PO\Http\Response $response       A response object which will be set downstream
 	 * @param  string               $route optional Used in place of the server request data
 	 * @return null
 	 */
@@ -167,7 +167,7 @@ implements IDispatchable
 	 * Attempts to match an endpoint
 	 * based on the request path and method
 	 * 
-	 * @param  Suburb\Http\Response $response       A response object which will be set downstream
+	 * @param  PO\Http\Response $response       A response object which will be set downstream
 	 * @param  string               $route optional Used in place of the server request data
 	 * @return array                                An IEndpoint and any associated route variables
 	 */

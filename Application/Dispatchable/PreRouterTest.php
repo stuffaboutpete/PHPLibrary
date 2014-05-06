@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
 require_once dirname(__FILE__) . '/../../Application.php';
 require_once dirname(__FILE__) . '/../IDispatchable.php';
@@ -22,7 +22,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testPreRouterCanBeInstantiated()
 	{
 		$router = new PreRouter();
-		$this->assertInstanceOf('Suburb\Application\Dispatchable\PreRouter', $router);
+		$this->assertInstanceOf('PO\Application\Dispatchable\PreRouter', $router);
 	}
 	
 	/**
@@ -33,9 +33,9 @@ extends \PHPUnit_Framework_TestCase {
 	 */
 	
 	/*$router = new PreRouter([
-		'/api'				=> 'Suburb\\Application\\Router\\Rest',
-		'/'					=> 'Suburb\\Application\\Router\\Mvc',
-		'/api/this/that'	=> 'Suburb\\Application\\Router\\Mvc'
+		'/api'				=> 'PO\\Application\\Router\\Rest',
+		'/'					=> 'PO\\Application\\Router\\Mvc',
+		'/api/this/that'	=> 'PO\\Application\\Router\\Mvc'
 	]);*/
 	
 }

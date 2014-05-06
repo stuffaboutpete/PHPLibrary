@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
 require_once dirname(__FILE__) . '/../IBootstrap.php';
 require_once dirname(__FILE__) . '/Config.php';
@@ -21,7 +21,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testConfigBootstrapCanBeInstantiated()
 	{
 		$configBootstrap = new Config();
-		$this->assertInstanceOf('\\Suburb\\Application\\Bootstrap\\Config', $configBootstrap);
+		$this->assertInstanceOf('\\PO\\Application\\Bootstrap\\Config', $configBootstrap);
 	}
 	
 }

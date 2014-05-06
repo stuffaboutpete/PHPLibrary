@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Application\Dispatchable;
+namespace PO\Application\Dispatchable;
 
 require_once 'vfsStream/vfsStream.php';
 require_once dirname(__FILE__) . '/../../Application.php';
@@ -19,37 +19,37 @@ extends \PHPUnit_Framework_TestCase {
 	private $mResponse;
 	
 	private $routes = [
-		'GET /'						=> 'Suburb\Application\Dispatchable\RestTest\Index',
-		'GET /test'					=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'GET /nested/path'			=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'GET /noclass'				=> 'Suburb\Application\Dispatchable\RestTest\NoClass',
-		'GET /notiendpoint'			=> 'Suburb\Application\Dispatchable\RestTest\NotIEndpoint',
-		'GET /camelcased'			=> 'Suburb\Application\Dispatchable\RestTest\CamelCased',
+		'GET /'						=> 'PO\Application\Dispatchable\RestTest\Index',
+		'GET /test'					=> 'PO\Application\Dispatchable\RestTest\Test',
+		'GET /nested/path'			=> 'PO\Application\Dispatchable\RestTest\Test',
+		'GET /noclass'				=> 'PO\Application\Dispatchable\RestTest\NoClass',
+		'GET /notiendpoint'			=> 'PO\Application\Dispatchable\RestTest\NotIEndpoint',
+		'GET /camelcased'			=> 'PO\Application\Dispatchable\RestTest\CamelCased',
 		'GET /global'				=> 'GlobalTest',
-		'POST /posttest'			=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'DELETE /deletetest'		=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'PUT /puttest'				=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'GET /test/{testkey}'		=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'GET /test/{key1}/{key2}'	=> 'Suburb\Application\Dispatchable\RestTest\Test',
-		'POST /test'				=> 'Suburb\Application\Dispatchable\RestTest\PostTest'
+		'POST /posttest'			=> 'PO\Application\Dispatchable\RestTest\Test',
+		'DELETE /deletetest'		=> 'PO\Application\Dispatchable\RestTest\Test',
+		'PUT /puttest'				=> 'PO\Application\Dispatchable\RestTest\Test',
+		'GET /test/{testkey}'		=> 'PO\Application\Dispatchable\RestTest\Test',
+		'GET /test/{key1}/{key2}'	=> 'PO\Application\Dispatchable\RestTest\Test',
+		'POST /test'				=> 'PO\Application\Dispatchable\RestTest\PostTest'
 	];
 	
 	public function setUp()
 	{
-		$this->virtualDir = \vfsStream::setup('SuburbApplicationDispatchableRestTest', null, array(
+		$this->virtualDir = \vfsStream::setup('POApplicationDispatchableRestTest', null, array(
 			'Index.php'			=> $this->writeClass('Index'),
 			'Test.php'			=> $this->writeClass('Test'),
 			'CamelCased.php'	=> $this->writeClass('CamelCased'),
 			'Global.php'		=> $this->writeClass('GlobalTest', ''),
-			'Notiendpoint.php'	=> '<?php namespace Suburb\Application\Dispatchable\RestTest; ' .
+			'Notiendpoint.php'	=> '<?php namespace PO\Application\Dispatchable\RestTest; ' .
 								   'class NotIEndpoint {}',
 			'PostTest.php'		=> $this->writeClass('PostTest')
 		));
-		foreach (scandir(\vfsStream::url('SuburbApplicationDispatchableRestTest')) as $file) {
-			include_once \vfsStream::url("SuburbApplicationDispatchableRestTest\\$file");
+		foreach (scandir(\vfsStream::url('POApplicationDispatchableRestTest')) as $file) {
+			include_once \vfsStream::url("POApplicationDispatchableRestTest\\$file");
 		}
 		$this->mRoutesConfig = $this->getMock(
-			'\Suburb\Config',
+			'\PO\Config',
 			array(),
 			array(array('key' => 'value'))
 		);
@@ -62,14 +62,14 @@ extends \PHPUnit_Framework_TestCase {
 			->method('get')
 			->will($this->returnCallback([$this, 'getCallback']));
 		$this->mApplication = $this->getMock(
-			'\Suburb\Application',
+			'\PO\Application',
 			array(),
 			array(
-				$this->getMock('\Suburb\Application\IDispatchable'),
-				$this->getMock('\Suburb\Http\Response')
+				$this->getMock('\PO\Application\IDispatchable'),
+				$this->getMock('\PO\Http\Response')
 			)
 		);
-		$this->mResponse = $this->getMock('\Suburb\Http\Response');
+		$this->mResponse = $this->getMock('\PO\Http\Response');
 		$_SERVER['REQUEST_METHOD'] = 'GET';
 		parent::setUp();
 	}
@@ -88,7 +88,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testDispatchableCanBeInstantiated()
 	{
 		$router = new Rest($this->mRoutesConfig);
-		$this->assertInstanceOf('\Suburb\Application\Dispatchable\Rest', $router);
+		$this->assertInstanceOf('\PO\Application\Dispatchable\Rest', $router);
 	}
 	
 	public function testDispatchableRequiresConfigObject()
@@ -104,7 +104,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -155,7 +155,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Index'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Index'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -166,7 +166,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -188,7 +188,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -209,7 +209,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -220,7 +220,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -231,7 +231,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\Test'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\Test'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -242,7 +242,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\CamelCased'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\CamelCased'));
 		$router->dispatch($this->mApplication, $this->mResponse);
 	}
 	
@@ -392,7 +392,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \Suburb\Application\Dispatchable\RestTest\PostTest'));
+			->with($this->equalTo('I\'m in \PO\Application\Dispatchable\RestTest\PostTest'));
 		$router->dispatch($this->mApplication, $this->mResponse, 'POST /test');
 	}
 	
@@ -400,7 +400,7 @@ extends \PHPUnit_Framework_TestCase {
 		return $this->routes[$key];
 	}
 	
-	private function writeClass($className, $namespace = 'Suburb\Application\Dispatchable\RestTest')
+	private function writeClass($className, $namespace = 'PO\Application\Dispatchable\RestTest')
 	{
 		
 		$content = '<?php';
@@ -409,9 +409,9 @@ extends \PHPUnit_Framework_TestCase {
 		}
 		return $content . <<<CLASS
 		
-		use Suburb\Application;
-		use Suburb\Http\Response;
-		use Suburb\Application\Dispatchable\Rest\IEndpoint;
+		use PO\Application;
+		use PO\Http\Response;
+		use PO\Application\Dispatchable\Rest\IEndpoint;
 		class $className
 		implements IEndpoint
 		{

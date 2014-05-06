@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Gateway\Factory\Model;
+namespace PO\Gateway\Factory\Model;
 
 interface IDismantleContributor
 {

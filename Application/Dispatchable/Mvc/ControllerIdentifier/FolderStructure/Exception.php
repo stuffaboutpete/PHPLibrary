@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure;
+namespace PO\Application\Dispatchable\Mvc\ControllerIdentifier\FolderStructure;
 
 class Exception
-extends \Suburb\Exception
+extends \PO\Exception
 {
 	
 	const GET_METHOD_CALLED_BEFORE_RECEIVE_PATH	= 0;

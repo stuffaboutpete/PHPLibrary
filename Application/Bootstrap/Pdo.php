@@ -1,9 +1,9 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
-use Suburb\Application;
-use Suburb\Application\IBootstrap;
+use PO\Application;
+use PO\Application\IBootstrap;
 
 class Pdo
 implements IBootstrap

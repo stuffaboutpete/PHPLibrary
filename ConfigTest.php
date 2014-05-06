@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/Config.php';
 
@@ -18,7 +18,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testConfigCanBeInstantiatedWithArray()
 	{
 		$config = new Config(['key' => 'value']);
-		$this->assertInstanceOf('Suburb\Config', $config);
+		$this->assertInstanceOf('PO\Config', $config);
 	}
 	
 	public function testConstructorArrayMustBeAssociative()
@@ -36,7 +36,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testConfigCanBeInstantiatedWithJSONString()
 	{
 		$config = new Config('{"key":"value"}');
-		$this->assertInstanceOf('Suburb\Config', $config);
+		$this->assertInstanceOf('PO\Config', $config);
 	}
 	
 	public function testConstructorDoesNotAcceptNonJSONString()
@@ -157,7 +157,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testConfigCanBeInstantiatedWithEnvironmentsArray()
 	{
 		$config = new Config(['key' => 'value'], ['live' => 'livesite.com']);
-		$this->assertInstanceOf('Suburb\Config', $config);
+		$this->assertInstanceOf('PO\Config', $config);
 	}
 	
 	public function testEnvironmentsArrayMustBeAssociative()

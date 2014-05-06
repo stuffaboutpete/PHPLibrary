@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/IoCContainer.php';
 require_once dirname(__FILE__) . '/IoCContainer/IContainment.php';
@@ -21,7 +21,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testContainerCanBeInstantiated()
 	{
 		$container = new IoCContainer();
-		$this->assertInstanceOf('Suburb\IoCContainer', $container);
+		$this->assertInstanceOf('PO\IoCContainer', $container);
 	}
 	
 	public function testContainerInstantiatesSimpleClass()
@@ -41,7 +41,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testContainerPassesSingleDependencyUponInstantiatingObject()
 	{
 		$container = new IoCContainer();
-		$object = $container->resolve('Suburb\IoCContainerTestA');
+		$object = $container->resolve('PO\IoCContainerTestA');
 		$this->assertInstanceOf('stdClass', $object->arg);
 	}
 	
@@ -49,13 +49,13 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\RuntimeException');
 		$container = new IoCContainer();
-		$container->resolve('Suburb\IoCContainerTestB');
+		$container->resolve('PO\IoCContainerTestB');
 	}
 	
 	public function testContainerPassesMultipleDependenciesUponInstantiatingObject()
 	{
 		$container = new IoCContainer();
-		$object = $container->resolve('Suburb\IoCContainerTestC');
+		$object = $container->resolve('PO\IoCContainerTestC');
 		$this->assertInstanceOf('stdClass', $object->arg1);
 		$this->assertInstanceOf('stdClass', $object->arg2);
 	}
@@ -63,8 +63,8 @@ extends \PHPUnit_Framework_TestCase {
 	public function testDependeciesAreResolvedUsingContainerAndReceiveTheirOwnDependencies()
 	{
 		$container = new IoCContainer();
-		$object = $container->resolve('Suburb\IoCContainerTestD');
-		$this->assertInstanceOf('Suburb\IoCContainerTestA', $object->arg);
+		$object = $container->resolve('PO\IoCContainerTestD');
+		$this->assertInstanceOf('PO\IoCContainerTestA', $object->arg);
 		$this->assertInstanceOf('stdClass', $object->arg->arg);
 	}
 	
@@ -74,7 +74,7 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject->key = 'value';
 		$container = new IoCContainer();
 		$object = $container->resolve(
-			'Suburb\IoCContainerTestC',
+			'PO\IoCContainerTestC',
 			[
 				null,
 				$stdObject
@@ -88,7 +88,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->setExpectedException('\InvalidArgumentException');
 		$container = new IoCContainer();
 		$object = $container->resolve(
-			'Suburb\IoCContainerTestC',
+			'PO\IoCContainerTestC',
 			new \stdClass()
 		);
 	}
@@ -99,10 +99,10 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject->key = 'value';
 		$container = new IoCContainer();
 		$object = $container->resolve(
-			'Suburb\IoCContainerTestD',
+			'PO\IoCContainerTestD',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
 		$this->assertEquals('value', $object->arg->arg->key);
@@ -113,7 +113,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->setExpectedException('\InvalidArgumentException');
 		$container = new IoCContainer();
 		$object = $container->resolve(
-			'Suburb\IoCContainerTestD',
+			'PO\IoCContainerTestD',
 			[],
 			new \stdClass()
 		);
@@ -125,10 +125,10 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject->key = 'value';
 		$container = new IoCContainer();
 		$object = $container->resolve(
-			'Suburb\IoCContainerTestE',
+			'PO\IoCContainerTestE',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
 		$this->assertEquals('value', $object->arg->arg->arg->key);
@@ -138,7 +138,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\RuntimeException');
 		$container = new IoCContainer();
-		$object = $container->resolve('Suburb\IoCContainerTestF');
+		$object = $container->resolve('PO\IoCContainerTestF');
 	}
 	
 	public function testObjectCanBeResolvedStatically()
@@ -146,15 +146,15 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject = new \stdClass();
 		$stdObject->key = 'value';
 		$object = IoCContainer::resolve(
-			'Suburb\IoCContainerTestE',
+			'PO\IoCContainerTestE',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
-		$this->assertInstanceOf('Suburb\IoCContainerTestE', $object);
-		$this->assertInstanceOf('Suburb\IoCContainerTestD', $object->arg);
-		$this->assertInstanceOf('Suburb\IoCContainerTestA', $object->arg->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestE', $object);
+		$this->assertInstanceOf('PO\IoCContainerTestD', $object->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestA', $object->arg->arg);
 		$this->assertEquals('value', $object->arg->arg->arg->key);
 	}
 	
@@ -172,7 +172,7 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject = new \stdClass();
 		$container = new IoCContainer();
 		$container->registerSingleton($stdObject);
-		$object = $container->resolve('Suburb\IoCContainerTestC');
+		$object = $container->resolve('PO\IoCContainerTestC');
 		$this->assertSame($stdObject, $object->arg1);
 		$this->assertSame($stdObject, $object->arg2);
 	}
@@ -182,7 +182,7 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject = new \stdClass();
 		$container = new IoCContainer();
 		$container->registerSingleton($stdObject);
-		$object = $container->resolve('Suburb\IoCContainerTestD');
+		$object = $container->resolve('PO\IoCContainerTestD');
 		$this->assertSame($stdObject, $object->arg->arg);
 	}
 	
@@ -232,7 +232,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$container = new IoCContainer();
 		$container->registerCallback('alias', function($container){
-			return $container->resolve('Suburb\IoCContainerTestA');
+			return $container->resolve('PO\IoCContainerTestA');
 		});
 		$object = $container->resolve('alias');
 		$this->assertInstanceOf('stdClass', $object->arg);
@@ -283,11 +283,11 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
-		$object = $container->resolve('Suburb\IoCContainerTestInterface');
-		$this->assertInstanceOf('Suburb\IoCContainerTestG', $object);
+		$object = $container->resolve('PO\IoCContainerTestInterface');
+		$this->assertInstanceOf('PO\IoCContainerTestG', $object);
 	}
 	
 	public function testRegisteredInterfaceExampleMustImplementInterface()
@@ -295,8 +295,8 @@ extends \PHPUnit_Framework_TestCase {
 		$this->setExpectedException('\InvalidArgumentException');
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestA'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestA'
 		);
 	}
 	
@@ -304,11 +304,11 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
-		$object = $container->resolve('Suburb\IoCContainerTestH');
-		$this->assertInstanceOf('Suburb\IoCContainerTestG', $object->arg);
+		$object = $container->resolve('PO\IoCContainerTestH');
+		$this->assertInstanceOf('PO\IoCContainerTestG', $object->arg);
 	}
 	
 	public function testResolvedSingletonCanBeRegisteredInterfaceImplementation()
@@ -317,10 +317,10 @@ extends \PHPUnit_Framework_TestCase {
 		$singleton = new IoCContainerTestG();
 		$container->registerSingleton($singleton);
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
-		$object = $container->resolve('Suburb\IoCContainerTestH');
+		$object = $container->resolve('PO\IoCContainerTestH');
 		$this->assertSame($singleton, $object->arg);
 	}
 	
@@ -328,8 +328,8 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('BadMethodCallException');
 		IoCContainer::registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
 	}
 	
@@ -338,10 +338,10 @@ extends \PHPUnit_Framework_TestCase {
 		$this->setExpectedException('BadMethodCallException');
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
-		IoCContainer::resolve('Suburb\IoCContainerTestInterface');
+		IoCContainer::resolve('PO\IoCContainerTestInterface');
 	}
 	
 	public function testObjectMethodCanBeCalledThroughAContainerAndItsDependenciesAreResolved()
@@ -380,7 +380,7 @@ extends \PHPUnit_Framework_TestCase {
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call($object, 'testMethod3');
-		$this->assertInstanceOf('Suburb\IoCContainerTestA', $object->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestA', $object->arg);
 		$this->assertInstanceOf('stdClass', $object->arg->arg);
 	}
 	
@@ -424,7 +424,7 @@ extends \PHPUnit_Framework_TestCase {
 			'testMethod3',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
 		$this->assertEquals('value', $object->arg->arg->key);
@@ -454,7 +454,7 @@ extends \PHPUnit_Framework_TestCase {
 			'testMethod5',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
 		$this->assertEquals('value', $object->arg->arg->arg->key);
@@ -478,11 +478,11 @@ extends \PHPUnit_Framework_TestCase {
 			'testMethod5',
 			[],
 			[
-				'Suburb\IoCContainerTestA' => [$stdObject]
+				'PO\IoCContainerTestA' => [$stdObject]
 			]
 		);
-		$this->assertInstanceOf('Suburb\IoCContainerTestD', $object->arg);
-		$this->assertInstanceOf('Suburb\IoCContainerTestA', $object->arg->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestD', $object->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestA', $object->arg->arg);
 		$this->assertEquals('value', $object->arg->arg->arg->key);
 	}
 	
@@ -521,24 +521,24 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
 		$object = new IoCContainerTestI();
 		$container->call($object, 'testMethod6');
-		$this->assertInstanceOf('Suburb\IoCContainerTestG', $object->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestG', $object->arg);
 	}
 	
 	public function testRegisteredInterfaceImplementationIsUsedAsNestedMethodDependency()
 	{
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
 		$object = new IoCContainerTestI();
 		$container->call($object, 'testMethod7');
-		$this->assertInstanceOf('Suburb\IoCContainerTestG', $object->arg->arg);
+		$this->assertInstanceOf('PO\IoCContainerTestG', $object->arg->arg);
 	}
 	
 	public function testInterfaceImplementationIsNotUsedWhenMethodIsCalledStatically()
@@ -546,8 +546,8 @@ extends \PHPUnit_Framework_TestCase {
 		$this->setExpectedException('BadMethodCallException');
 		$container = new IoCContainer();
 		$container->registerInterface(
-			'Suburb\IoCContainerTestInterface',
-			'Suburb\IoCContainerTestG'
+			'PO\IoCContainerTestInterface',
+			'PO\IoCContainerTestG'
 		);
 		$object = new IoCContainerTestI();
 		IoCContainer::call($object, 'testMethod6');
@@ -555,7 +555,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testContainerAcceptsIContainmentWhichIsCalledWithContainerAsArgument()
 	{
-		$mContainment = $this->getMock('\Suburb\IoCContainer\IContainment');
+		$mContainment = $this->getMock('\PO\IoCContainer\IContainment');
 		$container = new IoCContainer();
 		$mContainment->expects($this->once())
 			->method('register')
@@ -565,18 +565,18 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testMultipleIContainmentsCanBePassedToConstructorAndEachIsCalledWithContainer()
 	{
-		$mContainment1 = $this->getMock('\Suburb\IoCContainer\IContainment');
-		$mContainment2 = $this->getMock('\Suburb\IoCContainer\IContainment');
-		$mContainment3 = $this->getMock('\Suburb\IoCContainer\IContainment');
+		$mContainment1 = $this->getMock('\PO\IoCContainer\IContainment');
+		$mContainment2 = $this->getMock('\PO\IoCContainer\IContainment');
+		$mContainment3 = $this->getMock('\PO\IoCContainer\IContainment');
 		$mContainment1->expects($this->once())
 			->method('register')
-			->with($this->isInstanceOf('Suburb\IoCContainer'));
+			->with($this->isInstanceOf('PO\IoCContainer'));
 		$mContainment2->expects($this->once())
 			->method('register')
-			->with($this->isInstanceOf('Suburb\IoCContainer'));
+			->with($this->isInstanceOf('PO\IoCContainer'));
 		$mContainment3->expects($this->once())
 			->method('register')
-			->with($this->isInstanceOf('Suburb\IoCContainer'));
+			->with($this->isInstanceOf('PO\IoCContainer'));
 		new IoCContainer(
 			$mContainment1,
 			$mContainment2,

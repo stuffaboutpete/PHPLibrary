@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
-use Suburb\Helper\ArrayType;
+use PO\Helper\ArrayType;
 
 class View
 {

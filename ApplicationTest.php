@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/Application.php';
 require_once dirname(__FILE__) . '/Application/IDispatchable.php';
@@ -18,11 +18,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mDispatchable = $this->getMock('\Suburb\Application\IDispatchable');
-		$this->mResponse = $this->getMock('\Suburb\Http\Response');
-		$this->mBootstrap = $this->getMock('\Suburb\Application\IBootstrap');
-		$this->mBootstrap2 = $this->getMock('\Suburb\Application\IBootstrap');
-		$this->mLogger = $this->getMock('\Suburb\Application\IErrorLogger');
+		$this->mDispatchable = $this->getMock('\PO\Application\IDispatchable');
+		$this->mResponse = $this->getMock('\PO\Http\Response');
+		$this->mBootstrap = $this->getMock('\PO\Application\IBootstrap');
+		$this->mBootstrap2 = $this->getMock('\PO\Application\IBootstrap');
+		$this->mLogger = $this->getMock('\PO\Application\IErrorLogger');
 		parent::setUp();
 	}
 	
@@ -41,7 +41,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testApplicationCanBeInstantiated()
 	{
 		$application = new Application($this->mDispatchable, $this->mResponse);
-		$this->assertInstanceOf('\\Suburb\\Application', $application);
+		$this->assertInstanceOf('\\PO\\Application', $application);
 	}
 	
 	public function testApplicationRequiresDispatchableObject()
@@ -89,7 +89,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mDispatchable
 			->expects($this->once())
 			->method('dispatch')
-			->with($this->isInstanceOf('\Suburb\Application'));
+			->with($this->isInstanceOf('\PO\Application'));
 		$application->run();
 	}
 	
@@ -105,7 +105,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('dispatch')
 			->with(
 				$this->anything(),
-				$this->isInstanceOf('\Suburb\Http\Response')
+				$this->isInstanceOf('\PO\Http\Response')
 			);
 		$application->run();
 	}
@@ -151,7 +151,7 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mResponse,
 			array($this->mBootstrap, $this->mBootstrap2)
 		);
-		$this->assertInstanceOf('\\Suburb\\Application', $application);
+		$this->assertInstanceOf('\\PO\\Application', $application);
 	}
 	
 	public function testApplicationDoesNotAcceptSingleBootstrap()
@@ -208,11 +208,11 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mBootstrap
 			->expects($this->atLeastOnce())
 			->method('run')
-			->with($this->isInstanceOf('\Suburb\Application'));
+			->with($this->isInstanceOf('\PO\Application'));
 		$this->mBootstrap2
 			->expects($this->atLeastOnce())
 			->method('run')
-			->with($this->isInstanceOf('\Suburb\Application'));
+			->with($this->isInstanceOf('\PO\Application'));
 		$application->run();
 	}
 	
@@ -281,12 +281,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testResponseIsSetTo500IfExceptionIsThrownWhilstDispatching()
 	{
-		$this->setExpectedException('\Suburb\TestException');
+		$this->setExpectedException('\PO\TestException');
 		$this->mDispatchable
 			->expects($this->any())
 			->method('dispatch')
 			->will($this->returnCallback(function(){
-				throw new \Suburb\TestException();
+				throw new \PO\TestException();
 			}));
 		$this->mResponse
 			->expects($this->once())
@@ -297,12 +297,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testResponseIsSetTo500IfExceptionIsThrownWhilstBootstrapping()
 	{
-		$this->setExpectedException('\Suburb\TestException');
+		$this->setExpectedException('\PO\TestException');
 		$this->mBootstrap
 			->expects($this->any())
 			->method('run')
 			->will($this->returnCallback(function(){
-				throw new \Suburb\TestException();
+				throw new \PO\TestException();
 			}));
 		$this->mResponse
 			->expects($this->once())
@@ -323,22 +323,22 @@ extends \PHPUnit_Framework_TestCase {
 			[],
 			$this->mLogger
 		);
-		$this->assertInstanceOf('\\Suburb\\Application', $application);
+		$this->assertInstanceOf('\\PO\\Application', $application);
 	}
 	
 	public function testDispatchExceptionIsPassedToIErrorLogger()
 	{
-		$this->setExpectedException('\Suburb\TestException');
+		$this->setExpectedException('\PO\TestException');
 		$this->mDispatchable
 			->expects($this->any())
 			->method('dispatch')
 			->will($this->returnCallback(function(){
-				throw new \Suburb\TestException();
+				throw new \PO\TestException();
 			}));
 		$this->mLogger
 			->expects($this->once())
 			->method('logException')
-			->with($this->isInstanceOf('\Suburb\TestException'));
+			->with($this->isInstanceOf('\PO\TestException'));
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
@@ -350,17 +350,17 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testBootstrapExceptionIsPassedToIErrorLogger()
 	{
-		$this->setExpectedException('\Suburb\TestException');
+		$this->setExpectedException('\PO\TestException');
 		$this->mBootstrap
 			->expects($this->any())
 			->method('run')
 			->will($this->returnCallback(function(){
-				throw new \Suburb\TestException();
+				throw new \PO\TestException();
 			}));
 		$this->mLogger
 			->expects($this->once())
 			->method('logException')
-			->with($this->isInstanceOf('\Suburb\TestException'));
+			->with($this->isInstanceOf('\PO\TestException'));
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,

@@ -1,11 +1,11 @@
 <?php
 
-namespace Suburb\Model\Property;
+namespace PO\Model\Property;
 
-use Suburb\Model\Property;
+use PO\Model\Property;
 
 /**
- * Suburb\Model\Property\Float
+ * PO\Model\Property\Float
  * 
  * An implementation of a Property
  * which will only hold a float value
@@ -45,7 +45,7 @@ extends Property
 	 * @param  int     $decimals    The maximum number of decimal places in the number
 	 * @param  array   $constraints optional See parent
 	 * @param  boolean $allowNull   optional See parent
-	 * @see    Suburb\Model\Property
+	 * @see    PO\Model\Property
 	 * @return null
 	 */
 	public function __construct($length, $decimals, $constraints = [], $allowNull = true)

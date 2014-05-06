@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
-use Suburb\Model;
-use Suburb\Model\Property;
-use Suburb\Helper\ArrayType;
+use PO\Model;
+use PO\Model\Property;
+use PO\Helper\ArrayType;
 
 /**
  * Model
@@ -20,7 +20,7 @@ class Model
 	 * An array of Properties
 	 * 
 	 * Holds only instances of
-	 * Suburb\Model\Property
+	 * PO\Model\Property
 	 * 
 	 * @var array
 	 */
@@ -83,7 +83,7 @@ class Model
 	 * Accepts an array of properties and an
 	 * optional array of initial values
 	 * 
-	 * @param  array $properties An associative array of Suburb\Model\Property objects
+	 * @param  array $properties An associative array of PO\Model\Property objects
 	 * @param  array $values     optional Any initial values that must be set immediately
 	 * @return null
 	 * @throws InvalidArgumentException If an empty array of properties is provided
@@ -112,7 +112,7 @@ class Model
 		foreach ($properties as $propertyName => $propertyObject) {
 			
 			// Ensure each element is an instance
-			// of Suburb\Model\Property
+			// of PO\Model\Property
 			if (!$propertyObject instanceof Property) {
 				throw new Model\Property(
 					Model\Property::PROVIDED_PROPERTY_NOT_INSTANCE_OF_PROPERTY,
@@ -158,7 +158,7 @@ class Model
 	 * Finds a property object from its name
 	 * 
 	 * @param  string $propertyName        Name of the property
-	 * @return Suburb\Model\Property|false A property object if found, false otherwise
+	 * @return PO\Model\Property|false A property object if found, false otherwise
 	 */
 	private function getPropertyObject($propertyName)
 	{

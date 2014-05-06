@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\Twitter\AuthMechanism;
+namespace PO\HttpRequest\Api\Twitter\AuthMechanism;
 
-use Suburb\HttpRequest\Api\Twitter;
+use PO\HttpRequest\Api\Twitter;
 
 class SingleUser
 implements Twitter\IAuthMechanism

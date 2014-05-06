@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb\Gateway;
+namespace PO\Gateway;
 
 require_once dirname(__FILE__) . '/Collection.php';
 require_once dirname(__FILE__) . '/../Gateway.php';
@@ -15,7 +15,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function setUp()
 	{
-		$this->mGateway = $this->getMockBuilder('\Suburb\Gateway')
+		$this->mGateway = $this->getMockBuilder('\PO\Gateway')
 			->disableOriginalConstructor()
 			->getMock();
 		parent::setUp();
@@ -30,7 +30,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testCollectionCanBeInstantiated()
 	{
 		$collection = new Collection($this->mGateway, '\stdClass', []);
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
 	}
 	
 	public function testCollectionRequiresGateway()
@@ -41,13 +41,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCollectionRequiresClassName()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, null, []);
 	}
 	
 	public function testClassNameMustRepresentAnExistingClass()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, '\InvalidClass', []);
 	}
 	
@@ -59,13 +59,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testDataMustBeAnArrayOfArrays()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, '\stdClass', ['id' => 1]);
 	}
 	
 	public function testDataArrayMustBeAssociative()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, '\stdClass', [['id', 'value']]);
 	}
 	
@@ -128,7 +128,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testObjectReturnedFromGatewayMustBeOfNominatedClass()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		$this->mGateway
 			->expects($this->once())
 			->method('getObject')
@@ -152,14 +152,14 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCollectionEntryCannotBeChanged()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		$collection = new Collection($this->mGateway, '\stdClass', [['id' => 1]]);
 		$collection[0] = 'new value';
 	}
 	
 	public function testCollectionEntryCannotBeUnset()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		$collection = new Collection($this->mGateway, '\stdClass', [['id' => 1]]);
 		unset($collection[0]);
 	}
@@ -208,7 +208,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testObjectsMustBeInstanceOfSuppliedClassName()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, '\stdClass', [['id' => 1], ['id' => 2]], [
 			new \stdClass(),
 			$this->mGateway
@@ -217,7 +217,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testObjectArrayMustBeSameLengthAsDataArrayIfProvided()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Collection\Exception');
+		$this->setExpectedException('\PO\Gateway\Collection\Exception');
 		new Collection($this->mGateway, '\stdClass', [['id' => 1]], [
 			new \stdClass(),
 			new \stdClass()

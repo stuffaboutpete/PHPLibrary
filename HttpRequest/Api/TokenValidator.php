@@ -1,12 +1,12 @@
 <?php
 
-namespace Suburb\HttpRequest\Api;
+namespace PO\HttpRequest\Api;
 
-use Suburb\HttpRequest;
-use Suburb\HttpRequest\ITransferMethod;
-use Suburb\HttpRequest\Response;
-use Suburb\HttpRequest\Api\TokenValidator\IMechanism;
-use Suburb\HttpRequest\Api\TokenValidator\Exception;
+use PO\HttpRequest;
+use PO\HttpRequest\ITransferMethod;
+use PO\HttpRequest\Response;
+use PO\HttpRequest\Api\TokenValidator\IMechanism;
+use PO\HttpRequest\Api\TokenValidator\Exception;
 
 class TokenValidator
 extends HttpRequest

@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/Model.php';
 require_once dirname(__FILE__) . '/Model/Property.php';
@@ -17,7 +17,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		$this->mProperty = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[],
 			'',
 			true,
@@ -26,7 +26,7 @@ extends \PHPUnit_Framework_TestCase {
 			['set', 'get']
 		);
 		$this->mProperty2 = $this->getMockForAbstractClass(
-			'Suburb\Model\Property',
+			'PO\Model\Property',
 			[],
 			'',
 			true,
@@ -47,18 +47,18 @@ extends \PHPUnit_Framework_TestCase {
 	public function testModelCanBeInstantiated()
 	{
 		$model = new Model(['testProperty' => $this->mProperty]);
-		$this->assertInstanceOf('Suburb\Model', $model);
+		$this->assertInstanceOf('PO\Model', $model);
 	}
 	
 	public function testModelRequiresNonEmptyArrayOfProperties()
 	{
-		$this->setExpectedException('\Suburb\Model\Exception');
+		$this->setExpectedException('\PO\Model\Exception');
 		$model = new Model([]);
 	}
 	
 	public function testArrayOfPropertiesMustBeAssociative()
 	{
-		$this->setExpectedException('\Suburb\Model\Exception');
+		$this->setExpectedException('\PO\Model\Exception');
 		$model = new Model([$this->mProperty]);
 	}
 	
@@ -84,14 +84,14 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfAttemptingToSetUnrecognisedProperty()
 	{
-		$this->setExpectedException('\Suburb\Model\Exception');
+		$this->setExpectedException('\PO\Model\Exception');
 		$model = new Model(['testProperty' => $this->mProperty]);
 		$model->setNotTestProperty('Value');
 	}
 	
 	public function testExceptionIsThrownIfAttemptingToGetUnrecognisedProperty()
 	{
-		$this->setExpectedException('\Suburb\Model\Exception');
+		$this->setExpectedException('\PO\Model\Exception');
 		$model = new Model(['testProperty' => $this->mProperty]);
 		$model->getNotTestProperty();
 	}
@@ -173,7 +173,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testUnrecognisedConstructorPropertyValuesResultInException()
 	{
-		$this->setExpectedException('\Suburb\Model\Exception');
+		$this->setExpectedException('\PO\Model\Exception');
 		$model = new Model([
 			'propertyOne' => $this->mProperty,
 			'propertyTwo' => $this->mProperty2

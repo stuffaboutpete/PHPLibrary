@@ -1,10 +1,10 @@
 <?php
 
-namespace Suburb\Application\Bootstrap;
+namespace PO\Application\Bootstrap;
 
-use Suburb\Application;
-use Suburb\Application\IBootstrap;
-use Suburb\Application\Bootstrap\AccessController\Exception;
+use PO\Application;
+use PO\Application\IBootstrap;
+use PO\Application\Bootstrap\AccessController\Exception;
 
 class AccessController
 implements IBootstrap

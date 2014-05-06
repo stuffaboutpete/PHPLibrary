@@ -1,8 +1,8 @@
 <?php
 
-namespace Suburb\HttpRequest\Api\TokenValidator;
+namespace PO\HttpRequest\Api\TokenValidator;
 
-use Suburb\HttpRequest\Response;
+use PO\HttpRequest\Response;
 
 interface IMechanism
 {

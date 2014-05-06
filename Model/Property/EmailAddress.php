@@ -1,7 +1,7 @@
 <?php
 
-namespace Suburb\Model\Property;
-use Suburb\Model as Model;
+namespace PO\Model\Property;
+use PO\Model as Model;
 
 require_once dirname(__FILE__) . '/../Property.php';
 

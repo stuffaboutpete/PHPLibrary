@@ -1,6 +1,6 @@
 <?php
 
-namespace Suburb;
+namespace PO;
 
 require_once dirname(__FILE__) . '/Gateway.php';
 require_once dirname(__FILE__) . '/Gateway/IFactory.php';
@@ -39,14 +39,14 @@ extends \PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		
-		$this->mPdo = $this->getMock('\Suburb\GatewayTestPDO');
+		$this->mPdo = $this->getMock('\PO\GatewayTestPDO');
 		$this->mPdoStatement = $this->getMock('\PDOStatement');
-		$this->mFactory = $this->getMock('\Suburb\Gateway\IFactory');
-		$this->mQueryProvider = $this->getMock('\Suburb\Gateway\IQueryProvider');
-		$this->mCollection = $this->getMockBuilder('\Suburb\Gateway\Collection')
+		$this->mFactory = $this->getMock('\PO\Gateway\IFactory');
+		$this->mQueryProvider = $this->getMock('\PO\Gateway\IQueryProvider');
+		$this->mCollection = $this->getMockBuilder('\PO\Gateway\Collection')
 			->disableOriginalConstructor()
 			->getMock();
-		$this->mCollectionFactory = $this->getMock('\Suburb\Gateway\Collection\Factory');
+		$this->mCollectionFactory = $this->getMock('\PO\Gateway\Collection\Factory');
 		$this->dumpingGround = [];
 		
 		$this->mFactory
@@ -77,7 +77,7 @@ extends \PHPUnit_Framework_TestCase {
 	public function testGatewayCanBeInstantiated()
 	{
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$this->assertInstanceOf('Suburb\Gateway', $gateway);
+		$this->assertInstanceOf('PO\Gateway', $gateway);
 	}
 	
 	public function testGatewayRequiresPdoInstance()
@@ -95,12 +95,12 @@ extends \PHPUnit_Framework_TestCase {
 	public function testGatewayAcceptsNewTypeWithClassNameAndFactoryAndQueryProvider()
 	{
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 	}
 	
 	public function testClassNamePassedToAddTypeMustBeValidClassName()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType('\InvalidClass', $this->mFactory, $this->mQueryProvider);
 	}
@@ -109,40 +109,40 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', null, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', null, $this->mQueryProvider);
 	}
 	
 	public function testQueryProviderIsRequiredInCallToAddType()
 	{
 		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory);
 	}
 	
 	public function testFactoryMustApproveClassName()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
-		$mFactory = $this->getMock('\Suburb\Gateway\IFactory');
+		$this->setExpectedException('\PO\Gateway\Exception');
+		$mFactory = $this->getMock('\PO\Gateway\IFactory');
 		$mFactory
 			->expects($this->once())
 			->method('approveClass')
-			->with('Suburb\GatewayTestObject')
+			->with('PO\GatewayTestObject')
 			->will($this->returnValue(false));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('Suburb\GatewayTestObject', $mFactory, $this->mQueryProvider);
+		$gateway->addType('PO\GatewayTestObject', $mFactory, $this->mQueryProvider);
 	}
 	
 	public function testQueryProviderMustApproveClassName()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
-		$mQueryProvider = $this->getMock('\Suburb\Gateway\IQueryProvider');
+		$this->setExpectedException('\PO\Gateway\Exception');
+		$mQueryProvider = $this->getMock('\PO\Gateway\IQueryProvider');
 		$mQueryProvider
 			->expects($this->once())
 			->method('approveClass')
-			->with('Suburb\GatewayTestObject')
+			->with('PO\GatewayTestObject')
 			->will($this->returnValue(false));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('Suburb\GatewayTestObject', $this->mFactory, $mQueryProvider);
+		$gateway->addType('PO\GatewayTestObject', $this->mFactory, $mQueryProvider);
 	}
 	
 	public function testCallToFetchWillGetQueryAndRetrieveDataFromPdoAndPassToFactory()
@@ -175,13 +175,13 @@ extends \PHPUnit_Framework_TestCase {
 				return $object;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$this->assertEquals('value', $gateway->fetch('\Suburb\GatewayTestObject')->key);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$this->assertEquals('value', $gateway->fetch('\PO\GatewayTestObject')->key);
 	}
 	
 	public function testFactoryMustReturnInstanceOfNamedClass()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -203,45 +203,45 @@ extends \PHPUnit_Framework_TestCase {
 			->method('build')
 			->will($this->returnValue(new \stdClass()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testRegisteredClassNameMustBePassedToFetch()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->fetch('\stdClass');
 	}
 	
 	public function testReturnedSingleQueryMustBeArray()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
 			->will($this->returnValue('SQL query'));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testReturnedSingleQueryArrayMustBeAssociative()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
 			->will($this->returnValue(['SQL query']));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testReturnedMultipleQueryMustBeArray()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -251,13 +251,13 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMultipleSelectPreparedStatements')
 			->will($this->returnValue('SQL query'));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testReturnedMultipleQueryArrayMustBeAssociative()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -267,8 +267,8 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMultipleSelectPreparedStatements')
 			->will($this->returnValue(['SQL query']));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testCallToFetchByWillGetQueryAndRetrieveDataFromPdoAndPassToFactory()
@@ -301,13 +301,13 @@ extends \PHPUnit_Framework_TestCase {
 				return $object;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$this->assertEquals('value', $gateway->fetchByExample('\Suburb\GatewayTestObject')->key);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$this->assertEquals('value', $gateway->fetchByExample('\PO\GatewayTestObject')->key);
 	}
 	
 	public function testCallToFetchByWithUnrecognisedQueryKeyWillTriggerException()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -317,8 +317,8 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMultipleSelectPreparedStatements')
 			->will($this->returnValue([]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetchByInvalid('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetchByInvalid('\PO\GatewayTestObject');
 	}
 	
 	public function testCallToFetchAllWillGetQueryAndRetrieveDataFromPdoAndReturnCollection()
@@ -348,8 +348,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('build')
 			->with(
-				$this->isInstanceOf('\Suburb\Gateway'),
-				$this->equalTo('Suburb\GatewayTestObject'),
+				$this->isInstanceOf('\PO\Gateway'),
+				$this->equalTo('PO\GatewayTestObject'),
 				$this->equalTo([
 					['key1' => 'value 1'],
 					['key2' => 'value 2']
@@ -357,14 +357,14 @@ extends \PHPUnit_Framework_TestCase {
 			)
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
 	}
 	
 	public function testCollectionFactoryMustReturnCollection()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -389,8 +389,8 @@ extends \PHPUnit_Framework_TestCase {
 			->method('build')
 			->will($this->returnValue(new GatewayTestObject));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
 	}
 	
 	public function testObjectCanBeCreatedByGatewaySoCollectionCanRetrieveObjects()
@@ -425,8 +425,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('build')
 			->with(
-				$this->isInstanceOf('\Suburb\Gateway'),
-				$this->equalTo('Suburb\GatewayTestObject'),
+				$this->isInstanceOf('\PO\Gateway'),
+				$this->equalTo('PO\GatewayTestObject'),
 				$this->equalTo([
 					['key1' => 'value 1'],
 					['key2' => 'value 2']
@@ -437,14 +437,14 @@ extends \PHPUnit_Framework_TestCase {
 				return $this->mCollection;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
 	}
 	
 	public function testClassTypeMustBeRegisteredWhenCallingGetObject()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -472,8 +472,8 @@ extends \PHPUnit_Framework_TestCase {
 				return $this->mCollection;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
 	}
 	
 	public function testPreparedQueryReturnedFromQueryProviderWillBePreparedWithProvidedData()
@@ -510,16 +510,16 @@ extends \PHPUnit_Framework_TestCase {
 			->with($this->equalTo(['key' => 'value']))
 			->will($this->returnValue(new GatewayTestObject()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$this->assertInstanceOf(
-			'\Suburb\GatewayTestObject',
-			$gateway->fetch('\Suburb\GatewayTestObject', 'value 1', 'value 2')
+			'\PO\GatewayTestObject',
+			$gateway->fetch('\PO\GatewayTestObject', 'value 1', 'value 2')
 		);
 	}
 	
 	public function testParameterCountMustNotBeGreaterThanArgumentCountPassedToFetch()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -529,13 +529,13 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMultipleSelectPreparedStatements')
 			->will($this->returnValue([]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject', 'value');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject', 'value');
 	}
 	
 	public function testParameterCountMustNotBeLessThanArgumentCountPassedToFetch()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSingleSelectPreparedStatements')
@@ -545,8 +545,8 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getMultipleSelectPreparedStatements')
 			->will($this->returnValue([]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject', 'value 1', 'value 2');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject', 'value 1', 'value 2');
 	}
 	
 	public function testPreparedQueryForMultipleSelectWillBePreparedWithProvidedData()
@@ -581,8 +581,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('build')
 			->with(
-				$this->isInstanceOf('\Suburb\Gateway'),
-				$this->equalTo('Suburb\GatewayTestObject'),
+				$this->isInstanceOf('\PO\Gateway'),
+				$this->equalTo('PO\GatewayTestObject'),
 				$this->equalTo([
 					['key1' => 'value 1'],
 					['key2' => 'value 2']
@@ -590,9 +590,9 @@ extends \PHPUnit_Framework_TestCase {
 			)
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject', 'value');
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject', 'value');
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
 	}
 	
 	public function testUsingSameSingleQueryTwiceWillNotResultInTwoDatabaseCalls()
@@ -619,10 +619,10 @@ extends \PHPUnit_Framework_TestCase {
 			->with($this->equalTo(['key' => 'value']))
 			->will($this->returnValue(new GatewayTestObject()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$object = $gateway->fetch('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\GatewayTestObject', $object);
-		$this->assertSame($object, $gateway->fetch('\Suburb\GatewayTestObject'));
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$object = $gateway->fetch('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\GatewayTestObject', $object);
+		$this->assertSame($object, $gateway->fetch('\PO\GatewayTestObject'));
 	}
 	
 	public function testUsingSameSingleQueryTwiceWillNotResultInTwoFactoryCalls()
@@ -649,10 +649,10 @@ extends \PHPUnit_Framework_TestCase {
 			->with($this->equalTo(['key' => 'value']))
 			->will($this->returnValue(new GatewayTestObject()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$object = $gateway->fetch('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\GatewayTestObject', $object);
-		$this->assertSame($object, $gateway->fetch('\Suburb\GatewayTestObject'));
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$object = $gateway->fetch('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\GatewayTestObject', $object);
+		$this->assertSame($object, $gateway->fetch('\PO\GatewayTestObject'));
 	}
 	
 	public function testUsingSameMultipleQueryTwiceWillNotResultInTwoDatabaseCalls()
@@ -678,10 +678,10 @@ extends \PHPUnit_Framework_TestCase {
 			->method('build')
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
-		$this->assertSame($collection, $gateway->fetchAll('\Suburb\GatewayTestObject'));
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
+		$this->assertSame($collection, $gateway->fetchAll('\PO\GatewayTestObject'));
 	}
 	
 	public function testUsingSameMultipleQueryTwiceWillNotResultInTwoCollectionFactoryCalls()
@@ -707,10 +707,10 @@ extends \PHPUnit_Framework_TestCase {
 			->method('build')
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$collection = $gateway->fetchAll('\Suburb\GatewayTestObject');
-		$this->assertInstanceOf('\Suburb\Gateway\Collection', $collection);
-		$this->assertSame($collection, $gateway->fetchAll('\Suburb\GatewayTestObject'));
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$collection = $gateway->fetchAll('\PO\GatewayTestObject');
+		$this->assertInstanceOf('\PO\Gateway\Collection', $collection);
+		$this->assertSame($collection, $gateway->fetchAll('\PO\GatewayTestObject'));
 	}
 	
 	public function testMultipleDatabaseRequestsAreMadeIfPreparedStatementValuesChange()
@@ -764,9 +764,9 @@ extends \PHPUnit_Framework_TestCase {
 				return $object;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$this->assertEquals(1, $gateway->fetch('\Suburb\GatewayTestObject', 'parameter 1')->id);
-		$this->assertEquals(2, $gateway->fetch('\Suburb\GatewayTestObject', 'parameter 2')->id);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$this->assertEquals(1, $gateway->fetch('\PO\GatewayTestObject', 'parameter 1')->id);
+		$this->assertEquals(2, $gateway->fetch('\PO\GatewayTestObject', 'parameter 2')->id);
 	}
 	
 	public function testObjectDataRetrievedFromTwoDatabaseCallsResultsInSameObjectInMemory()
@@ -808,9 +808,9 @@ extends \PHPUnit_Framework_TestCase {
 				return $object;
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$object = $gateway->fetchByFirst('\Suburb\GatewayTestObject');
-		$this->assertSame($object, $gateway->fetchBySecond('\Suburb\GatewayTestObject'));
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$object = $gateway->fetchByFirst('\PO\GatewayTestObject');
+		$this->assertSame($object, $gateway->fetchBySecond('\PO\GatewayTestObject'));
 	}
 	
 	public function testMultiKeyDataRetrievedFromTwoDatabaseCallsResultsInSameObjectInMemory()
@@ -854,13 +854,13 @@ extends \PHPUnit_Framework_TestCase {
 			}));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType(
-			'\Suburb\GatewayTestObject',
+			'\PO\GatewayTestObject',
 			$this->mFactory,
 			$this->mQueryProvider,
 			['key1', 'key2']
 		);
-		$object = $gateway->fetchByFirst('\Suburb\GatewayTestObject');
-		$this->assertSame($object, $gateway->fetchBySecond('\Suburb\GatewayTestObject'));
+		$object = $gateway->fetchByFirst('\PO\GatewayTestObject');
+		$this->assertSame($object, $gateway->fetchBySecond('\PO\GatewayTestObject'));
 	}
 	
 	public function testCachedObjectIsPassedToCollection()
@@ -905,8 +905,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('build')
 			->with(
-				$this->isInstanceOf('\Suburb\Gateway'),
-				$this->equalTo('Suburb\GatewayTestObject'),
+				$this->isInstanceOf('\PO\Gateway'),
+				$this->equalTo('PO\GatewayTestObject'),
 				$this->equalTo([
 					['id' => 1],
 					['id' => 2]
@@ -915,9 +915,9 @@ extends \PHPUnit_Framework_TestCase {
 			)
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
-		$gateway->fetch('\Suburb\GatewayTestObject');
-		$gateway->fetchAll('\Suburb\GatewayTestObject');
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->fetch('\PO\GatewayTestObject');
+		$gateway->fetchAll('\PO\GatewayTestObject');
 	}
 	
 	public function testMultiKeyCachedObjectIsPassedToCollection()
@@ -963,8 +963,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('build')
 			->with(
-				$this->isInstanceOf('\Suburb\Gateway'),
-				$this->equalTo('Suburb\GatewayTestObject'),
+				$this->isInstanceOf('\PO\Gateway'),
+				$this->equalTo('PO\GatewayTestObject'),
 				$this->equalTo([
 					['key1' => 1, 'key2' => 2],
 					['key1' => 2, 'key2' => 2]
@@ -974,13 +974,13 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue($this->mCollection));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType(
-			'\Suburb\GatewayTestObject',
+			'\PO\GatewayTestObject',
 			$this->mFactory,
 			$this->mQueryProvider,
 			['key1', 'key2']
 		);
-		$gateway->fetch('\Suburb\GatewayTestObject');
-		$gateway->fetchAll('\Suburb\GatewayTestObject');
+		$gateway->fetch('\PO\GatewayTestObject');
+		$gateway->fetchAll('\PO\GatewayTestObject');
 	}
 	
 	public function testObjectCanBeSavedAndUpdateQueryWillBeSentToPdo()
@@ -1006,21 +1006,21 @@ extends \PHPUnit_Framework_TestCase {
 			->method('execute')
 			->with(['id' => 1]);
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save($object);
 	}
 	
 	public function testSavedObjectMustBeOfARegisteredType()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save(new \stdClass());
 	}
 	
 	public function testSaveSQLQueryMustIncludeINSERTKeywords()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSavePreparedStatement')
@@ -1030,13 +1030,13 @@ extends \PHPUnit_Framework_TestCase {
 			->method('dismantle')
 			->will($this->returnValue(['id' => 1]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save(new GatewayTestObject());
 	}
 	
 	public function testSaveSQLQueryMustIncludeONDUPLICATEKEYUPDATEKeywords()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getSavePreparedStatement')
@@ -1046,7 +1046,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('dismantle')
 			->will($this->returnValue(['id' => 1]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save(new GatewayTestObject());
 	}
 	
@@ -1088,14 +1088,14 @@ extends \PHPUnit_Framework_TestCase {
 			->method('fetch')
 			->will($this->returnValue(['id' => 1]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save($object);
-		$this->assertSame($object, $gateway->fetch('\Suburb\GatewayTestObject'));
+		$this->assertSame($object, $gateway->fetch('\PO\GatewayTestObject'));
 	}
 	
 	public function testFactoryMustReturnArrayWhichMatchesPreparedStatementVariables()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$object = new GatewayTestObject();
 		$object->id = 1;
 		$this->mQueryProvider
@@ -1108,7 +1108,7 @@ extends \PHPUnit_Framework_TestCase {
 			->with($this->equalTo($object))
 			->will($this->returnValue(['id' => 1]));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save($object);
 	}
 	
@@ -1135,27 +1135,27 @@ extends \PHPUnit_Framework_TestCase {
 			->method('execute')
 			->with(['id' => 1]);
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->delete($object);
 	}
 	
 	public function testDeletedObjectMustBeOfARegisteredType()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->delete(new \stdClass());
 	}
 	
 	public function testDeleteSQLQueryMustIncludeDELETEKeywords()
 	{
-		$this->setExpectedException('\Suburb\Gateway\Exception');
+		$this->setExpectedException('\PO\Gateway\Exception');
 		$this->mQueryProvider
 			->expects($this->once())
 			->method('getDeletePreparedStatement')
 			->will($this->returnValue('Invalid deeelete statement'));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->delete(new GatewayTestObject());
 	}
 	
@@ -1185,12 +1185,12 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(new GatewayTestObject()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType(
-			'\Suburb\GatewayTestObject',
+			'\PO\GatewayTestObject',
 			$this->mFactory,
 			$this->mQueryProvider,
 			['key1', 'key2']
 		);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testQueryProviderIsPassedAllKeysWhenGettingMultipleSelectStatements()
@@ -1219,12 +1219,12 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(new GatewayTestObject()));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType(
-			'\Suburb\GatewayTestObject',
+			'\PO\GatewayTestObject',
 			$this->mFactory,
 			$this->mQueryProvider,
 			['key1', 'key2']
 		);
-		$gateway->fetch('\Suburb\GatewayTestObject');
+		$gateway->fetch('\PO\GatewayTestObject');
 	}
 	
 	public function testQueryProviderIsPassedKeysAndAllPropertiesWhenGettingSaveStatement()
@@ -1253,7 +1253,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('prepare')
 			->will($this->returnValue($this->mPdoStatement));
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
-		$gateway->addType('\Suburb\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\PO\GatewayTestObject', $this->mFactory, $this->mQueryProvider);
 		$gateway->save($object);
 	}
 	
@@ -1279,7 +1279,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('execute');
 		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
 		$gateway->addType(
-			'\Suburb\GatewayTestObject',
+			'\PO\GatewayTestObject',
 			$this->mFactory,
 			$this->mQueryProvider,
 			['key1', 'key2']
