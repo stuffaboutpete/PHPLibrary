@@ -64,6 +64,7 @@ implements IBootstrap
 		$classNames = [];
 		// @todo Should we inject SPL objects?
 		foreach (new \DirectoryIterator($this->searchDirectory) as $file) {
+			if ($file->isDot()) continue;
 			$reflection = $this->getReflectionObjectFromFile($file);
 			if ($reflection && $reflection->isSubclassOf(Model::Class)) {
 				array_push($classNames, $reflection->getName());
@@ -77,6 +78,7 @@ implements IBootstrap
 		$subDirectory = $this->getSubDirectoryFromClassName($className);
 		if ($subDirectory !== null) {
 			foreach (new \DirectoryIterator($subDirectory) as $file) {
+				if ($file->isDot()) continue;
 				$reflection = $this->getReflectionObjectFromFile($file);
 				if (!$reflection->implementsInterface('PO\Gateway\IFactory')) continue;
 				return $this->buildFromReflection($reflection);
@@ -95,6 +97,7 @@ implements IBootstrap
 		$subDirectory = $this->getSubDirectoryFromClassName($className);
 		if ($subDirectory !== null) {
 			foreach (new \DirectoryIterator($subDirectory) as $file) {
+				if ($file->isDot()) continue;
 				$reflection = $this->getReflectionObjectFromFile($file);
 				if (!$reflection->implementsInterface('PO\Gateway\IQueryProvider')) continue;
 				return $this->buildFromReflection($reflection);
@@ -113,6 +116,7 @@ implements IBootstrap
 		$classNames = [];
 		// @todo Should we inject SPL objects?
 		foreach (new \DirectoryIterator($directory) as $file) {
+			if ($file->isDot()) continue;
 			$reflection = $this->getReflectionObjectFromFile($file);
 			if ($reflection && $reflection->implementsInterface(IBuildMapContributor::Class)) {
 				array_push($classNames, $this->buildFromReflection($reflection));
@@ -128,6 +132,7 @@ implements IBootstrap
 		$classNames = [];
 		// @todo Should we inject SPL objects?
 		foreach (new \DirectoryIterator($directory) as $file) {
+			if ($file->isDot()) continue;
 			$reflection = $this->getReflectionObjectFromFile($file);
 			if ($reflection && $reflection->implementsInterface(IDismantleContributor::Class)) {
 				array_push($classNames, $this->buildFromReflection($reflection));
