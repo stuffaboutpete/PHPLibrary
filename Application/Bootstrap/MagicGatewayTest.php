@@ -93,7 +93,7 @@ extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mApplication = $this->getMockBuilder('PO\Application')
-			->setMethods(['extend', 'extensionExists', 'getIoC'])
+			->setMethods(['extend', 'hasExtension', 'getIoC'])
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mIoCContainer = $this->getMock('PO\IoCContainer');
@@ -181,7 +181,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->once())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication
@@ -204,7 +204,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->once())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(false));
 		$this->mApplication
@@ -243,7 +243,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->any())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication
@@ -322,7 +322,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->any())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication
@@ -403,7 +403,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->any())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication
@@ -501,7 +501,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->any())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication
@@ -567,7 +567,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mApplication
 			->expects($this->any())
-			->method('extensionExists')
+			->method('hasExtension')
 			->with('ioC')
 			->will($this->returnValue(true));
 		$this->mApplication

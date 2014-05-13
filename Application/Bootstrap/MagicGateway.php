@@ -45,7 +45,7 @@ implements IBootstrap
 		
 		$application->extend('gateway', $this->gateway);
 		
-		$this->ioCContainer = $application->extensionExists('ioC') ? $application->getIoC() : null;
+		$this->ioCContainer = $application->hasExtension('ioC') ? $application->getIoC() : null;
 		
 		if ($this->ioCContainer) $this->ioCContainer->registerSingleton($this->gateway);
 		
