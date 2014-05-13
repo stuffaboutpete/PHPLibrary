@@ -182,7 +182,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mObject
 			->expects($this->once())
-			->method('propertyNames')
+			->method('getPropertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
 		$factory = new Model('\PO\Gateway\Factory\ModelTestObject');
 		$factory->dismantle($this->mObject);
@@ -192,7 +192,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mObject
 			->expects($this->at(0))
-			->method('propertyNames')
+			->method('getPropertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
 		$this->mObject
 			->expects($this->at(1))
@@ -214,7 +214,7 @@ extends \PHPUnit_Framework_TestCase {
 		$stdObject = new \stdClass();
 		$this->mObject
 			->expects($this->at(0))
-			->method('propertyNames')
+			->method('getPropertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
 		$this->mObject
 			->expects($this->at(1))
@@ -245,12 +245,50 @@ extends \PHPUnit_Framework_TestCase {
 		);
 	}
 	
+	public function testDismantleContructorRequestsArrayKeysToUnsetAndTheyDoNoAppearInFinalResult()
+	{
+		$stdObject = new \stdClass();
+		$this->mObject
+			->expects($this->at(0))
+			->method('getPropertyNames')
+			->will($this->returnValue(['propertyOne']));
+		$this->mObject
+			->expects($this->at(1))
+			->method('getPropertyOne')
+			->will($this->returnValue($stdObject));
+		$this->mDismantleContributor
+			->expects($this->at(0))
+			->method('dismantle')
+			->with([
+				'property_one' => $stdObject
+			])
+			->will($this->returnValue([
+				'property_one_id' => 'std object id'
+			]));
+		$this->mDismantleContributor
+			->expects($this->at(1))
+			->method('getUnusedKeys')
+			->will($this->returnValue(['property_one']));
+		$factory = new Model(
+			'\PO\Gateway\Factory\ModelTestObject',
+			null,
+			[$this->mDismantleContributor]
+		);
+		$this->assertEquals(
+			['property_one_id' => 'std object id'],
+			$factory->dismantle($this->mObject)
+		);
+	}
+	
+	// @todo Test value returned by getUnusedKeys is non-associative array
+	// @todo Test keys returned by getUnusedKeys exist
+	
 	public function testMultipleDismantleContributorsCanBeSupplied()
 	{
 		$stdObject = new \stdClass();
 		$this->mObject
 			->expects($this->at(0))
-			->method('propertyNames')
+			->method('getPropertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
 		$this->mObject
 			->expects($this->at(1))
@@ -294,12 +332,81 @@ extends \PHPUnit_Framework_TestCase {
 		);
 	}
 	
-	public function testExceptionIsThrownIfObjectIsNotWrittenByDismantleContributor()
+	public function testRemovingUnusedKeysOccursAfterAllDismantlingsHaveOccured()
+	{
+		$stdObject = new \stdClass();
+		$this->mObject
+			->expects($this->at(0))
+			->method('getPropertyNames')
+			->will($this->returnValue(['propertyOne', 'propertyTwo']));
+		$this->mObject
+			->expects($this->at(1))
+			->method('getPropertyOne')
+			->will($this->returnValue($stdObject));
+		$this->mObject
+			->expects($this->at(2))
+			->method('getPropertyTwo')
+			->will($this->returnValue($stdObject));
+		$this->mDismantleContributor
+			->expects($this->at(0))
+			->method('dismantle')
+			->with([
+				'property_one' => $stdObject,
+				'property_two' => $stdObject
+			])
+			->will($this->returnValue([
+				'property_one_id' => 'value 1'
+			]));
+		$dismantleContributor2 = $this->getMock(
+			'\PO\Gateway\Factory\Model\IDismantleContributor'
+		);
+		$dismantleContributor2
+			->expects($this->once())
+			->method('dismantle')
+			->with([
+				'property_one'		=> $stdObject,
+				'property_one_id'	=> 'value 1',
+				'property_two'		=> $stdObject
+			])
+			->will($this->returnValue([
+				'property_two_id' => 'value 2'
+			]));
+		$this->mDismantleContributor
+			->expects($this->at(1))
+			->method('getUnusedKeys')
+			->with([
+				'property_one'		=> $stdObject,
+				'property_one_id'	=> 'value 1',
+				'property_two'		=> $stdObject,
+				'property_two_id'	=> 'value 2'
+			])
+			->will($this->returnValue(['property_one']));
+		$dismantleContributor2
+			->expects($this->at(1))
+			->method('getUnusedKeys')
+			->with([
+				'property_one_id'	=> 'value 1',
+				'property_two'		=> $stdObject,
+				'property_two_id'	=> 'value 2'
+			])
+			->will($this->returnValue(['property_two']));
+		$factory = new Model(
+			'\PO\Gateway\Factory\ModelTestObject',
+			null,
+			[$this->mDismantleContributor, $dismantleContributor2]
+		);
+		$this->assertEquals(
+			['property_one_id' => 'value 1', 'property_two_id' => 'value 2'],
+			$factory->dismantle($this->mObject)
+		);
+	}
+	
+	public function testExceptionIsThrownIfComplexIsNotOverWrittenOrRemovedByDismantleContributors()
 	{
 		$this->setExpectedException('\PO\Gateway\Factory\Model\Exception');
 		$this->mObject
 			->expects($this->at(0))
-			->method('propertyNames')
+			->method('getPropertyNames')
 			->will($this->returnValue(['propertyOne', 'propertyTwo']));
 		$this->mObject
 			->expects($this->at(1))
@@ -327,7 +434,7 @@ class ModelTestObject
 extends \stdClass
 {
 	public function __construct($data = null){ $this->data = $data; }
-	public function propertyNames(){}
+	public function getPropertyNames(){}
 	public function getPropertyOne(){}
 	public function getPropertyTwo(){}
 }

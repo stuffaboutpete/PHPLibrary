@@ -2,10 +2,11 @@
 
 namespace PO\Gateway\Factory;
 
-use PO\Gateway\IFactory;
 use PO\Gateway\Factory\Model\Exception;
+use PO\Gateway\IFactory;
 use PO\Helper\ArrayType;
 use PO\Helper\StringType;
+use PO\IoCContainer;
 
 class Model
 implements IFactory
@@ -14,17 +15,20 @@ implements IFactory
 	private $className;
 	private $buildMapContributors;
 	private $dismantleContributors;
+	private $ioCContainer;
 	
 	public function __construct(
-		/*string */	$className,
-		array		$buildMapContributors = null,
-		array		$dismantleContributors = null
+		/*string */		$className,
+		array			$buildMapContributors = null,
+		array			$dismantleContributors = null,
+		IoCContainer	$ioCContainer = null
 	)
 	{
 		$this->className = trim($className, '\\');
 		// @todo Check following contains instances of relevant interface
 		$this->buildMapContributors = $buildMapContributors;
 		$this->dismantleContributors = $dismantleContributors;
+		$this->ioCContainer = $ioCContainer;
 	}
 	
 	public function approveClass($class)
@@ -80,14 +84,18 @@ implements IFactory
 			}
 		}
 		
-		return new $this->className($data);
+		if (isset($this->ioCContainer)) {
+			return $this->ioCContainer->resolve($this->className, [$data]);
+		} else {
+			return new $this->className($data);
+		}
 		
 	}
 	
 	public function dismantle($object)
 	{
 		
-		$properties = $object->propertyNames();
+		$properties = $object->getPropertyNames();
 		$values = [];
 		
 		foreach ($properties as $property) {
@@ -110,6 +118,16 @@ implements IFactory
 			// Check no properties are missing
 			
 			if (is_array($complexValues)) $values = array_merge($values, $complexValues);
+		}
+		
+		foreach ((array) $this->dismantleContributors as $contributor) {
+			
+			$unusedKeys = $contributor->getUnusedKeys($values);
+			
+			foreach ((array) $unusedKeys as $key) {
+				unset($values[$key]);
+			}
+			
 		}
 		
 		foreach ($values as $property => $value) {
