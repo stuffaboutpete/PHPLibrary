@@ -103,7 +103,10 @@ abstract class Property
 			if ($this->optional) {
 				$value = null;
 			} else {
-				throw new Exception(Exception::NON_NULL_PROPERTY_SET_TO_NULL);
+				throw new Exception(
+					Exception::NON_NULL_PROPERTY_SET_TO_NULL,
+					'Property type: ' . get_class($this)
+				);
 			}
 			return;
 		}
