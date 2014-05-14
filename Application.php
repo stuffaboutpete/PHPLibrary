@@ -4,7 +4,7 @@ namespace PO;
 
 use PO\Application\IDispatchable;
 use PO\Application\IBootstrap;
-use PO\Application\IErrorLogger;
+use PO\Application\IErrorHandler;
 use PO\Http\Response;
 
 /**
@@ -44,7 +44,7 @@ class Application
 	 */
 	private $bootstraps = [];
 	
-	private $errorLogger;
+	private $exceptionHandler;
 	
 	/**
 	 * Extensions that have been registered
@@ -67,7 +67,7 @@ class Application
 		IDispatchable	$dispatchable,
 		Response		$response,
 		array			$bootstraps = [],
-		IErrorLogger	$errorLogger = null
+		IErrorHandler	$exceptionHandler = null
 	)
 	{
 		
@@ -86,7 +86,7 @@ class Application
 		$this->dispatchable = $dispatchable;
 		$this->response = $response;
 		$this->bootstraps = $bootstraps;
-		$this->errorLogger = $errorLogger;
+		$this->exceptionHandler = $exceptionHandler;
 		
 	}
 	
@@ -101,6 +101,10 @@ class Application
 	public function run()
 	{
 		
+		if (isset($this->exceptionHandler)) {
+			$this->exceptionHandler->setup($this, $this->response);
+		}
+		
 		try {
 			
 			// Run any provided bootstrap files
@@ -114,7 +118,9 @@ class Application
 			
 		} catch (\Exception $exception) {
 			
-			if (isset($this->errorLogger)) $this->errorLogger->logException($exception);
+			if (isset($this->exceptionHandler)) {
+				$this->exceptionHandler->handleException($exception, 500);
+			}
 			
 			$this->response->set500();
 			

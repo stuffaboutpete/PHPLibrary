@@ -100,7 +100,7 @@ implements IControllerIdentifier
 			$target = (isset($prefix)) ? $prefix . $delimiter : $delimiter;
 			$target .= implode($delimiter, $pathParts) . $suffix;
 			array_push($pathVariables[0], array_pop($pathParts));
-		} while (!$existenceFunction($target) && count($pathParts) > 0);
+		} while ($target != '\\' && !$existenceFunction($target) && count($pathParts) > 0);
 		
 		array_pop($pathVariables[0]);
 		
@@ -120,13 +120,15 @@ implements IControllerIdentifier
 		
 		array_pop($pathVariables[1]);
 		
-		if ($existenceFunction($target) && $existenceFunction($indexTarget)) {
+		if ($target != '\\' && $existenceFunction($target) && $existenceFunction($indexTarget)) {
 			throw new Exception($ambiguityException, "$target and $indexTarget both exist");
 		}
 		
-		if (!$existenceFunction($target) && !$existenceFunction($indexTarget)) return null;
+		if ($target != '\\' && !$existenceFunction($target) && !$existenceFunction($indexTarget)) {
+			return null;
+		}
 		
-		$target = ($existenceFunction($target)) ? $target : $indexTarget;
+		$target = ($target != '\\' && $existenceFunction($target)) ? $target : $indexTarget;
 		$pathVariables = $pathVariables[($existenceFunction($target)) ? 0 : 1];
 		
 		if (count($pathVariables) % 2 != 0) return null;

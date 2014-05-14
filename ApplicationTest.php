@@ -5,7 +5,7 @@ namespace PO;
 require_once dirname(__FILE__) . '/Application.php';
 require_once dirname(__FILE__) . '/Application/IDispatchable.php';
 require_once dirname(__FILE__) . '/Application/IBootstrap.php';
-require_once dirname(__FILE__) . '/Application/IErrorLogger.php';
+require_once dirname(__FILE__) . '/Application/IErrorHandler.php';
 require_once dirname(__FILE__) . '/Http/Response.php';
 
 class ApplicationTest
@@ -22,7 +22,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse = $this->getMock('\PO\Http\Response');
 		$this->mBootstrap = $this->getMock('\PO\Application\IBootstrap');
 		$this->mBootstrap2 = $this->getMock('\PO\Application\IBootstrap');
-		$this->mLogger = $this->getMock('\PO\Application\IErrorLogger');
+		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
 		parent::setUp();
 	}
 	
@@ -32,7 +32,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse = null;
 		$this->mBootstrap = null;
 		$this->mBootstrap2 = null;
-		$this->mLogger = null;
+		$this->mErrorHandler = null;
 		parent::tearDown();
 	}
 	
@@ -315,18 +315,40 @@ extends \PHPUnit_Framework_TestCase {
 		$application->run();
 	}
 	
-	public function testApplicationAcceptsOptionalIErrorLogger()
+	public function testApplicationAcceptsOptionalIErrorHandler()
 	{
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
 			[],
-			$this->mLogger
+			$this->mErrorHandler
 		);
 		$this->assertInstanceOf('\\PO\\Application', $application);
 	}
 	
-	public function testDispatchExceptionIsPassedToIErrorLogger()
+	public function testIErrorHandlerSetupMethodIsCalled()
+	{
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			[],
+			$this->mErrorHandler
+		);
+		$this->mErrorHandler
+			->expects($this->once())
+			->method('setup')
+			->with(
+				$this->equalTo($application),
+				$this->mResponse
+			);
+		$this->mResponse
+			->expects($this->any())
+			->method('isInitialised')
+			->will($this->returnValue(true));
+		$application->run();
+	}
+	
+	public function testDispatchExceptionIsPassedToIErrorHandler()
 	{
 		$this->setExpectedException('\PO\TestException');
 		$this->mDispatchable
@@ -335,20 +357,20 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function(){
 				throw new \PO\TestException();
 			}));
-		$this->mLogger
-			->expects($this->once())
-			->method('logException')
-			->with($this->isInstanceOf('\PO\TestException'));
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
 			[],
-			$this->mLogger
+			$this->mErrorHandler
 		);
+		$this->mErrorHandler
+			->expects($this->once())
+			->method('handleException')
+			->with($this->isInstanceOf('\PO\TestException'));
 		$application->run();
 	}
 	
-	public function testBootstrapExceptionIsPassedToIErrorLogger()
+	public function testBootstrapExceptionIsPassedToIErrorHandler()
 	{
 		$this->setExpectedException('\PO\TestException');
 		$this->mBootstrap
@@ -357,19 +379,21 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function(){
 				throw new \PO\TestException();
 			}));
-		$this->mLogger
-			->expects($this->once())
-			->method('logException')
-			->with($this->isInstanceOf('\PO\TestException'));
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
 			[$this->mBootstrap],
-			$this->mLogger
+			$this->mErrorHandler
 		);
+		$this->mErrorHandler
+			->expects($this->once())
+			->method('handleException')
+			->with($this->isInstanceOf('\PO\TestException'));
 		$application->run();
 	}
 	
+	// @todo Except exception handler to set response
+	// @todo If not, do it ourselves
 	// @todo Can we catch non exceptions? Syntax errors and the like
 	
 }
