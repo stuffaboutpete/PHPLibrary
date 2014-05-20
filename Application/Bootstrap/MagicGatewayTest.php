@@ -28,7 +28,6 @@ extends \PHPUnit_Framework_TestCase {
 	private $mDependencyFactory;
 	private $mModelFactory;
 	private $mSimpleQueryProvider;
-	private $mApplication;
 	private $mIoCContainer;
 	
 	public function setUp()
@@ -92,10 +91,6 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mSimpleQueryProvider = $this->getMockBuilder('PO\Gateway\QueryProvider\Simple')
 			->disableOriginalConstructor()
 			->getMock();
-		$this->mApplication = $this->getMockBuilder('PO\Application')
-			->setMethods(['extend', 'hasExtension', 'getIoC'])
-			->disableOriginalConstructor()
-			->getMock();
 		$this->mIoCContainer = $this->getMock('PO\IoCContainer');
 		$this->mDependencyFactory
 			->expects($this->any())
@@ -115,7 +110,6 @@ extends \PHPUnit_Framework_TestCase {
 		unset($this->mDependencyFactory);
 		unset($this->mModelFactory);
 		unset($this->mSimpleQueryProvider);
-		unset($this->mApplication);
 		unset($this->mIoCContainer);
 		parent::tearDown();
 	}
@@ -160,65 +154,18 @@ extends \PHPUnit_Framework_TestCase {
 		);
 	}
 	
-	public function testApplicationIsExtendedWithGatewayWhenBootstrapIsRun()
+	public function testGatewayIsRegisteredAsSingeltonInIoCContainerWhenBootstrapIsRun()
 	{
 		$bootstrap = new MagicGateway(
 			$this->mGateway,
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest')
 		);
-		$this->mApplication
-			->expects($this->once())
-			->method('extend')
-			->with(
-				'gateway',
-				$this->mGateway
-			);
-		$bootstrap->run($this->mApplication);
-	}
-	
-	public function testGatewayIsRegisteredAsSingletonOnIoCContainerIfItExistsOnApplication()
-	{
-		$this->mApplication
-			->expects($this->once())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->once())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mIoCContainer
 			->expects($this->once())
 			->method('registerSingleton')
 			->with($this->mGateway);
-		$bootstrap = new MagicGateway(
-			$this->mGateway,
-			$this->mDependencyFactory,
-			\vfsStream::url('POApplicationBootstrapMagicGatewayTest')
-		);
-		$bootstrap->run($this->mApplication);
-	}
-	
-	public function testNoIoCContainerSingletonIsRegisteredIfNoIoCContainerExistsOnApplication()
-	{
-		$this->mApplication
-			->expects($this->once())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(false));
-		$this->mApplication
-			->expects($this->never())
-			->method('getIoC');
-		$this->mIoCContainer
-			->expects($this->never())
-			->method('registerSingleton');
-		$bootstrap = new MagicGateway(
-			$this->mGateway,
-			$this->mDependencyFactory,
-			\vfsStream::url('POApplicationBootstrapMagicGatewayTest')
-		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testTypeIsRegisteredAgainstGatewayIfModelExistsInSearchFolderUsingDefaults()
@@ -236,20 +183,11 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\JustModel')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testReleventArgumentsArePassedToDependencyFactoryWhenRegisteringAType()
 	{
-		$this->mApplication
-			->expects($this->any())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->any())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mDependencyFactory
 			->expects($this->at(0))
 			->method('getModelFactory')
@@ -271,7 +209,7 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\JustModel')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testMultipleTypesAreRegisteredIfMultipleModelsExist()
@@ -297,11 +235,18 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\TwoModels')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testCustomFactoryIsUsedInPlaceOfModelFactoryIfItExists()
 	{
+		$this->mIoCContainer
+			->expects($this->any())
+			->method('resolve')
+			->with('TestNamespace\CustomFactory')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\CustomFactory();
+			}));
 		$this->mGateway
 			->expects($this->once())
 			->method('addType')
@@ -315,25 +260,18 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\Factory')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
-	public function testCustomFactoryIsCreatedUsingIoCContainerIfAvailable()
+	public function testCustomFactoryIsCreatedUsingIoCContainer()
 	{
-		$this->mApplication
-			->expects($this->any())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->any())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mIoCContainer
 			->expects($this->once())
 			->method('resolve')
 			->with('TestNamespace\CustomFactory')
-			->will($this->returnValue(new \TestNamespace\CustomFactory()));
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\CustomFactory();
+			}));
 		$this->mGateway
 			->expects($this->once())
 			->method('addType')
@@ -347,11 +285,18 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\Factory')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testBuildMapContributorIsProvidedToModelFactoryIfItExists()
 	{
+		$this->mIoCContainer
+			->expects($this->any())
+			->method('resolve')
+			->with('TestNamespace\SingleBuildMapBuildMap')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\SingleBuildMapBuildMap();
+			}));
 		$this->mDependencyFactory
 			->expects($this->at(0))
 			->method('getModelFactory')
@@ -368,58 +313,25 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\SingleBuildMap')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testMultipleBuildMapContributorsAreProvidedToModelFactoryIfTheyExist()
 	{
-		$this->mDependencyFactory
-			->expects($this->at(0))
-			->method('getModelFactory')
-			->with(
-				'TestNamespace\DualBuildMapTestModel',
-				$this->callback(function($argument){
-					if (!is_array($argument)) return false;
-					if (count($argument) != 2) return false;
-					if (get_class($argument[0]) != 'TestNamespace\DualBuildMapBuildMapOne') {
-						return false;
-					}
-					if (get_class($argument[1]) != 'TestNamespace\DualBuildMapBuildMapTwo') {
-						return false;
-					}
-					return true;
-				})
-			)
-			->will($this->returnValue($this->mModelFactory));
-		$bootstrap = new MagicGateway(
-			$this->mGateway,
-			$this->mDependencyFactory,
-			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\DualBuildMap')
-		);
-		$bootstrap->run($this->mApplication);
-	}
-	
-	public function testBuildMapContributorsAreCreatedUsingIoCContainerIfAvailable()
-	{
-		$this->mApplication
-			->expects($this->any())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->any())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mIoCContainer
 			->expects($this->at(1))
 			->method('resolve')
 			->with('TestNamespace\DualBuildMapBuildMapOne')
-			->will($this->returnValue(new \TestNamespace\DualBuildMapBuildMapOne()));
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualBuildMapBuildMapOne();
+			}));
 		$this->mIoCContainer
 			->expects($this->at(2))
 			->method('resolve')
 			->with('TestNamespace\DualBuildMapBuildMapTwo')
-			->will($this->returnValue(new \TestNamespace\DualBuildMapBuildMapTwo()));
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualBuildMapBuildMapTwo();
+			}));
 		$this->mDependencyFactory
 			->expects($this->at(0))
 			->method('getModelFactory')
@@ -443,11 +355,60 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\DualBuildMap')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
+	}
+	
+	public function testBuildMapContributorsAreCreatedUsingIoCContainer()
+	{
+		$this->mIoCContainer
+			->expects($this->at(1))
+			->method('resolve')
+			->with('TestNamespace\DualBuildMapBuildMapOne')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualBuildMapBuildMapOne();
+			}));
+		$this->mIoCContainer
+			->expects($this->at(2))
+			->method('resolve')
+			->with('TestNamespace\DualBuildMapBuildMapTwo')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualBuildMapBuildMapTwo();
+			}));
+		$this->mDependencyFactory
+			->expects($this->at(0))
+			->method('getModelFactory')
+			->with(
+				'TestNamespace\DualBuildMapTestModel',
+				$this->callback(function($argument){
+					if (!is_array($argument)) return false;
+					if (count($argument) != 2) return false;
+					if (get_class($argument[0]) != 'TestNamespace\DualBuildMapBuildMapOne') {
+						return false;
+					}
+					if (get_class($argument[1]) != 'TestNamespace\DualBuildMapBuildMapTwo') {
+						return false;
+					}
+					return true;
+				})
+			)
+			->will($this->returnValue($this->mModelFactory));
+		$bootstrap = new MagicGateway(
+			$this->mGateway,
+			$this->mDependencyFactory,
+			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\DualBuildMap')
+		);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testDismantleMapContributorIsProvidedToModelFactoryIfItExists()
 	{
+		$this->mIoCContainer
+			->expects($this->any())
+			->method('resolve')
+			->with('TestNamespace\SingleDismantlerDismantler')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\SingleDismantlerDismantler();
+			}));
 		$this->mDependencyFactory
 			->expects($this->at(0))
 			->method('getModelFactory')
@@ -465,11 +426,25 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\SingleDismantler')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testMultipleDismantleContributorsAreProvidedToModelFactoryIfTheyExist()
 	{
+		$this->mIoCContainer
+			->expects($this->at(1))
+			->method('resolve')
+			->with('TestNamespace\DualDismantlerDismantlerOne')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualDismantlerDismantlerOne();
+			}));
+		$this->mIoCContainer
+			->expects($this->at(2))
+			->method('resolve')
+			->with('TestNamespace\DualDismantlerDismantlerTwo')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\DualDismantlerDismantlerTwo();
+			}));
 		$this->mDependencyFactory
 			->expects($this->at(0))
 			->method('getModelFactory')
@@ -494,20 +469,11 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\DualDismantler')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
-	public function testDismantleContributorsAreCreatedUsingIoCContainerIfAvailable()
+	public function testDismantleContributorsAreCreatedUsingIoCContainer()
 	{
-		$this->mApplication
-			->expects($this->any())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->any())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mIoCContainer
 			->expects($this->at(1))
 			->method('resolve')
@@ -542,11 +508,18 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\DualDismantler')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	public function testCustomQueryProviderIsUsedInPlaceOfSimpleQueryProviderIfItExists()
 	{
+		$this->mIoCContainer
+			->expects($this->at(1))
+			->method('resolve')
+			->with('TestNamespace\CustomQueryProvider')
+			->will($this->returnCallback(function(){
+				return new \TestNamespace\CustomQueryProvider();
+			}));
 		$this->mGateway
 			->expects($this->once())
 			->method('addType')
@@ -560,20 +533,11 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\QueryProvider')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
-	public function testCustomQueryProviderIsCreatedUsingIoCContainerIfAvailable()
+	public function testCustomQueryProviderIsCreatedUsingIoCContainer()
 	{
-		$this->mApplication
-			->expects($this->any())
-			->method('hasExtension')
-			->with('ioC')
-			->will($this->returnValue(true));
-		$this->mApplication
-			->expects($this->any())
-			->method('getIoC')
-			->will($this->returnValue($this->mIoCContainer));
 		$this->mIoCContainer
 			->expects($this->once())
 			->method('resolve')
@@ -592,7 +556,7 @@ extends \PHPUnit_Framework_TestCase {
 			$this->mDependencyFactory,
 			\vfsStream::url('POApplicationBootstrapMagicGatewayTest\QueryProvider')
 		);
-		$bootstrap->run($this->mApplication);
+		$bootstrap->run($this->mIoCContainer);
 	}
 	
 	private function writeModel($className)

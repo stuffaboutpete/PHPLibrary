@@ -2,7 +2,6 @@
 
 namespace PO\Application\Bootstrap;
 
-use PO\Application;
 use PO\Application\Bootstrap\MagicGateway\DependencyFactory;
 use PO\Application\Bootstrap\MagicGateway\Exception;
 use PO\Application\IBootstrap;
@@ -40,14 +39,12 @@ implements IBootstrap
 		$this->searchDirectory = $searchDirectory;
 	}
 	
-	public function run(Application $application)
+	public function run(IoCContainer $ioCContainer)
 	{
 		
-		$application->extend('gateway', $this->gateway);
+		$this->ioCContainer = $ioCContainer;
 		
-		$this->ioCContainer = $application->hasExtension('ioC') ? $application->getIoC() : null;
-		
-		if ($this->ioCContainer) $this->ioCContainer->registerSingleton($this->gateway);
+		$ioCContainer->registerSingleton($this->gateway);
 		
 		foreach ($this->getAllModels() as $className) {
 			$this->gateway->addType(
@@ -175,11 +172,7 @@ implements IBootstrap
 	
 	private function buildFromReflection($reflection)
 	{
-		if (isset($this->ioCContainer)) {
-			return $this->ioCContainer->resolve($reflection->getName());
-		} else {
-			return $reflection->newInstance();
-		}
+		return $this->ioCContainer->resolve($reflection->getName());
 	}
 	
 }

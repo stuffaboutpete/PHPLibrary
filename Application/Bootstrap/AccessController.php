@@ -2,9 +2,8 @@
 
 namespace PO\Application\Bootstrap;
 
-use PO\Application;
+use PO\IoCContainer;
 use PO\Application\IBootstrap;
-use PO\Application\Bootstrap\AccessController\Exception;
 
 class AccessController
 implements IBootstrap
@@ -17,14 +16,10 @@ implements IBootstrap
 		$this->rules = $rules;
 	}
 	
-	public function run(Application $application)
+	public function run(IoCContainer $ioCContainer)
 	{
 		
-		if (!$application->hasExtension('authenticator')) {
-			throw new Exception(Exception::AUTHENTICATOR_DOES_NOT_EXIST_AS_APPLICATION_EXTENSION);
-		}
-		
-		$authenticator = $application->getAuthenticator();
+		$authenticator = $ioCContainer->resolve('PO\Application\Bootstrap\Authenticator');
 		
 		foreach ($this->rules as $pattern => $definition) {
 			if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {

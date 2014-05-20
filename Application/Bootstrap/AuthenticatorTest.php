@@ -14,20 +14,23 @@ extends \PHPUnit_Framework_TestCase {
 	private $mCookieHelper;
 	private $mPdo;
 	private $mPdoStatement;
+	private $mIoCContainer;
 	
 	public function setUp()
 	{
 		$this->mCookieHelper = $this->getMock('\PO\Helper\Cookie');
 		$this->mPdo = $this->getMock('\PO\Application\Bootstrap\AuthenticatorTestPDO');
 		$this->mPdoStatement = $this->getMock('\PDOStatement');
+		$this->mIoCContainer = $this->getMock('PO\IoCContainer');
 		parent::setUp();
 	}
 	
 	public function tearDown()
 	{
-		$this->mCookieHelper = null;
-		$this->mPdo = null;
-		$this->mPdoStatement = null;
+		unset($this->mCookieHelper);
+		unset($this->mPdo);
+		unset($this->mPdoStatement);
+		unset($this->mIoCContainer);
 		parent::tearDown();
 	}
 	
@@ -35,6 +38,16 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$authenticator = new Authenticator($this->mCookieHelper);
 		$this->assertInstanceOf('\PO\Application\Bootstrap\Authenticator', $authenticator);
+	}
+	
+	public function testAuthenticatorIsRegisteredAsSingletonOnIoCContainerWhenBootstrapIsRun()
+	{
+		$authenticator = new Authenticator($this->mCookieHelper);
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('registerSingleton')
+			->with($authenticator);
+		$authenticator->run($this->mIoCContainer);
 	}
 	
 	public function testUserDoesNotHavePrivilegesForSomeAccessTypeByDefault()
@@ -132,6 +145,23 @@ extends \PHPUnit_Framework_TestCase {
 		$authenticator = new Authenticator($this->mCookieHelper, $this->mPdo);
 		$authenticator->registerUser('example@identifier.com');
 		
+	}
+	
+	public function testExceptionIsThrownIfNoPDOIsProvidedToConstructorOrThroughIoCContainer()
+	{
+		$this->setExpectedException(
+			'\PO\Application\Bootstrap\Authenticator\Exception',
+			'',
+			Authenticator\Exception::NO_PDO_CONNECTION_IS_AVAILABLE
+		);
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('PDO')
+			->will($this->throwException(new \RuntimeException));
+		$authenticator = new Authenticator($this->mCookieHelper);
+		$authenticator->run($this->mIoCContainer);
+		$authenticator->registerUser('example@identifier.com');
 	}
 	
 	public function testReRegisteringAUserResultsInAnException()
