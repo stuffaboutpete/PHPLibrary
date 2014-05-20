@@ -2,8 +2,10 @@
 
 namespace PO\Application\Dispatchable;
 
+use PO\Application\Dispatchable\Mvc\Controller;
+use PO\Application\Dispatchable\Mvc\RouteVariables;
+
 require_once 'vfsStream/vfsStream.php';
-require_once dirname(__FILE__) . '/../../Application.php';
 require_once dirname(__FILE__) . '/../IDispatchable.php';
 require_once dirname(__FILE__) . '/../IErrorHandler.php';
 require_once dirname(__FILE__) . '/Mvc.php';
@@ -20,50 +22,27 @@ class MvcTest
 extends \PHPUnit_Framework_TestCase {
 	
 	private $virtualDir;
-	private $mApplication;
 	private $mResponse;
+	private $mIoCContainer;
+	private $mController;
 	private $mErrorHandler;
 	private $mException;
-	
-	public static function setUpBeforeClass()
-	{
-		spl_autoload_register(function($class){
-			$classParts = explode('\\', $class);
-			if (array_shift($classParts) != 'TestNamespace') return;
-			$path = \vfsStream::url(
-				'POApplicationDispatchableMvcTest/' . implode('/', $classParts) . '.php'
-			);
-			if (file_exists($path)) include_once $path;
-		});
-	}
 	
 	public function setUp()
 	{
 		$this->virtualDir = \vfsStream::setup('POApplicationDispatchableMvcTest', null, array(
-			//'Index.php' => $this->writeClass('Index')/*,
-			'Test.php' => $this->writeClass('Test'),
-			'IoCTest.php' => $this->writeClass('IoCTest'),
-			'ExceptionTest.php' => $this->writeClass('ExceptionTest'),
-			'ExceptionTemplate.phtml' => '<?php throw new \Exception();',
 			'Test.phtml' => 'I\'m in a template',
-			'TestWithContent.phtml' => '<?php echo $content;',
-			'NotValid.php' => '<?php ' .
-				'namespace TestNamespace;' .
-				'class NotValid {}'
-			
+			'TestWithContent.phtml' => '<?php echo $content;'
 		));
 		$this->mControllerIdentifier = $this->getMock(
 			'\PO\Application\Dispatchable\Mvc\IControllerIdentifier'
 		);
-		$this->mApplication = $this->getMock(
-			'\PO\Application',
-			array(),
-			array(
-				$this->getMock('\PO\Application\IDispatchable'),
-				$this->getMock('\PO\Http\Response')
-			)
-		);
 		$this->mResponse = $this->getMock('\PO\Http\Response');
+		$this->mIoCContainer = $this->getMock('\PO\IoCContainer');
+		$this->mController = $this->getMock(
+			'\PO\Application\Dispatchable\Mvc\Controller',
+			['dispatch']
+		);
 		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
 		$this->mException = $this->getMock('\PO\Application\Dispatchable\MvcTestException');
 		$_SERVER['REQUEST_URI'] = '/';
@@ -72,11 +51,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function tearDown()
 	{
-		$this->virtualDir = null;
-		$this->mControllerIdentifier = null;
-		$this->mApplication = null;
-		$this->mResponse = null;
-		$this->mErrorHandler = null;
+		unset($this->virtualDir);
+		unset($this->mControllerIdentifier);
+		unset($this->mResponse);
+		unset($this->mIoCContainer);
+		unset($this->mController);
+		unset($this->mErrorHandler);
 		parent::tearDown();
 	}
 	
@@ -102,9 +82,14 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testIdentifiedControllerIsDispatched()
@@ -112,13 +97,23 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
-		$this->mResponse
-			->expects($this->atLeastOnce())
-			->method('set200')
-			->with($this->equalTo('I\'m in \TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
+		$this->mController
+			->expects($this->once())
+			->method('dispatch');
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('call')
+			->will($this->returnCallback(function($controller, $method){
+				$controller->dispatch();
+			}));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testResponseIsInitialisedOnce()
@@ -126,12 +121,17 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$this->mResponse
 			->expects($this->once())
 			->method('set200');
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testResponseIsSetTo404IfNoControllerClassOrTemplateIsReturned()
@@ -140,7 +140,7 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('set404');
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 
 	public function testExceptionIsThrownIfControllerClassDoesNotExist()
@@ -151,7 +151,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getControllerClass')
 			->will($this->returnValue('\TestNamespace\NonExistant'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 
 	public function testExceptionIsThrownIfControllerClassIsNotInstanceOfController()
@@ -162,44 +162,40 @@ extends \PHPUnit_Framework_TestCase {
 			->method('getControllerClass')
 			->will($this->returnValue('\TestNamespace\NotValid'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testApplicationIsPassedToController()
+	public function testRouteVariablesAreMadeAvailableToController()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
-		$this->mApplication
-			->expects($this->at(0))
-			->method('hasExtension')
-			->with($this->equalTo('outputApplicationClass'))
-			->will($this->returnValue(true));
-		$this->mResponse
-			->expects($this->atLeastOnce())
-			->method('set200')
-			->with($this->equalTo(get_class($this->mApplication)));
-		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
-	}
-	
-	public function testPathVariablesArePassedToController()
-	{
-		$this->mControllerIdentifier
-			->expects($this->once())
-			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getPathVariables')
 			->will($this->returnValue(['testKey' => 'Test Value']));
-		$this->mResponse
-			->expects($this->atLeastOnce())
-			->method('set200')
-			->with($this->equalTo('testKey => Test Value'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('call')
+			->with(
+				$this->mController,
+				'dispatch',
+				[],
+				$this->callback(function($argument){
+					if (!is_array($argument)) return false;
+					if (!($argument[0] instanceof RouteVariables)) return false;
+					if ($argument[0]['testKey'] != 'Test Value') return false;
+					return true;
+				})
+			);
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsThrownIfPathVariablesIsNotArray()
@@ -208,13 +204,13 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->any())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getPathVariables')
 			->will($this->returnValue('string'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsThrownIfPathVariablesIsNotAssociative()
@@ -223,13 +219,13 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->any())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getPathVariables')
 			->will($this->returnValue(['nonAssocArray']));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testPathVariablesMayBeEmptyArray()
@@ -237,17 +233,18 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->any())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getPathVariables')
 			->will($this->returnValue([]));
-		$this->mResponse
-			->expects($this->atLeastOnce())
-			->method('set200')
-			->with($this->equalTo(''));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testIdentifiedTemplateFileIsRendered()
@@ -255,7 +252,12 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getTemplatePath')
@@ -265,9 +267,9 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \TestNamespace\TestI\'m in a template'));
+			->with($this->equalTo('I\'m in a template'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsThrownIfTemplateFileDoesNotExist()
@@ -276,7 +278,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getTemplatePath')
@@ -284,7 +286,7 @@ extends \PHPUnit_Framework_TestCase {
 				\vfsStream::url('POApplicationDispatchableMvcTest/NonExistant.phtml')
 			));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testTemplateCanBeRenderedWithNoControllerClass()
@@ -300,15 +302,28 @@ extends \PHPUnit_Framework_TestCase {
 			->method('set200')
 			->with($this->equalTo('I\'m in a template'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testTemplateFileCanAccessTemplateVariables()
 	{
+		$mController = $this->getMock(
+			'\PO\Application\Dispatchable\Mvc\Controller',
+			['dispatch', 'getTemplateVariables']
+		);
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($mController));
+		$mController
+			->expects($this->any())
+			->method('getTemplateVariables')
+			->will($this->returnValue(['content' => 'Test value']));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getTemplatePath')
@@ -318,34 +333,87 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set200')
-			->with($this->equalTo('I\'m in \TestNamespace\TestTest value'));
+			->with($this->equalTo('Test value'));
 		$dispatchable = new Mvc($this->mControllerIdentifier);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testControllerIsResolvedThroughIoCContainerIfProvided()
+	public function testControllerIsResolvedThroughIoCContainer()
 	{
-		$mIoCContainer = $this->getMock('\PO\IoCContainer');
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
-		$mIoCContainer
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
 			->expects($this->once())
 			->method('resolve')
-			->with('\TestNamespace\Test')
-			->will($this->returnValue(new \TestNamespace\IoCTest()));
-		$this->mResponse
-			->expects($this->atLeastOnce())
-			->method('set200')
-			->with($this->equalTo('I\'m in \TestNamespace\IoCTest'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $mIoCContainer);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
+		$dispatchable = new Mvc($this->mControllerIdentifier);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testExceptionIsThrownIfIoCContainerDoesNotReturnInstanceOfController()
+	{
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
+		$this->mControllerIdentifier
+			->expects($this->once())
+			->method('getControllerClass')
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue(new \stdClass()));
+		$dispatchable = new Mvc($this->mControllerIdentifier);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testExceptionIsThrownIfControllerDoesNotHaveDispatchMethod()
+	{
+		$this->setExpectedException('\PO\Application\Dispatchable\Mvc\Exception');
+		$mController = $this->getMock(
+			'\PO\Application\Dispatchable\Mvc\Controller',
+			[]
+		);
+		$this->mControllerIdentifier
+			->expects($this->once())
+			->method('getControllerClass')
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($mController));
+		$dispatchable = new Mvc($this->mControllerIdentifier);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testControllerIsDispatchedThroughIoCContainer()
+	{
+		$this->mControllerIdentifier
+			->expects($this->once())
+			->method('getControllerClass')
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('call')
+			->with(
+				$this->mController,
+				'dispatch'
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testControllerAcceptsOptionalIErrorHandler()
 	{
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
 		$this->assertInstanceOf('\PO\Application\Dispatchable\Mvc', $dispatchable);
 	}
 	
@@ -354,12 +422,9 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('setup')
-			->with(
-				$this->equalTo($this->mApplication),
-				$this->equalTo($this->mResponse)
-			);
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+			->with($this->equalTo($this->mResponse));
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionThrownFromControllerIdentifierIsPassedToIErrorHandlerAfterSetup()
@@ -377,27 +442,37 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->at(1))
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionThrownFromControllerIsPassedToIErrorHandler()
 	{
-		$this->mApplication
-			->expects($this->at(1))
-			->method('hasExtension')
-			->with('throwException')
-			->will($this->returnValue(true));
+		$this->mController
+			->expects($this->any())
+			->method('dispatch')
+			->will($this->throwException(new MvcTestException()));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('call')
+			->will($this->returnCallback(function($controller, $method){
+				$controller->dispatch();
+			}));
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionThrownFromControllerTemplateIsPassedToIErrorHandler()
@@ -405,7 +480,12 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getTemplatePath')
@@ -416,8 +496,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsPassedToIErrorHandlerIfIdentifiedClassDoesNotExist()
@@ -430,8 +510,8 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsPassedToIErrorHandlerIfControllerIsNotInstanceOfController()
@@ -439,13 +519,41 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\NotValid'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestException'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestException')
+			->will($this->returnValue(new \PO\Application\Dispatchable\MvcTestException()));
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testExceptionIsPassedToIErrorHandlerIfControllerDoesNotHaveDispatchMethod()
+	{
+		$mController = $this->getMock(
+			'\PO\Application\Dispatchable\Mvc\Controller',
+			[]
+		);
+		$this->mControllerIdentifier
+			->expects($this->once())
+			->method('getControllerClass')
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($mController));
+		$this->mErrorHandler
+			->expects($this->once())
+			->method('handleException')
+			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsPassedToIErrorHandlerIfIdentifiedTemplateDoesNotExist()
@@ -453,7 +561,12 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($this->mController));
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getTemplatePath')
@@ -464,27 +577,35 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsPassedToIErrorHandlerIfPathVariablesAreNotAssociativeArray()
 	{
-		$this->mApplication
-			->expects($this->at(2))
-			->method('hasExtension')
-			->with('outputInvalidTemplateVariables')
-			->will($this->returnValue(true));
+		$mController = $this->getMock(
+			'\PO\Application\Dispatchable\Mvc\Controller',
+			['dispatch', 'getTemplateVariables']
+		);
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
-			->will($this->returnValue('\TestNamespace\Test'));
+			->will($this->returnValue('\PO\Application\Dispatchable\MvcTestController'));
+		$this->mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('\PO\Application\Dispatchable\MvcTestController')
+			->will($this->returnValue($mController));
+		$mController
+			->expects($this->atLeastOnce())
+			->method('getTemplateVariables')
+			->will($this->returnValue(['one', 'two']));
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('handleException')
 			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionIsPassedToErrorHandlerIfNoControllerOrTemplateIsFound()
@@ -496,8 +617,8 @@ extends \PHPUnit_Framework_TestCase {
 				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
 				404
 			);
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testResponseIsSetTo500ifErrorHandlerDoesNotSetReponseWhilstHandlingException()
@@ -512,8 +633,8 @@ extends \PHPUnit_Framework_TestCase {
 				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
 				404
 			);
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testExceptionThrownFromErrorHandlerStillResultsInResponseBeingSet()
@@ -531,8 +652,8 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function(){
 				throw new \Exception();
 			}));
-		$dispatchable = new Mvc($this->mControllerIdentifier, null, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mApplication, $this->mResponse);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
 	/**
@@ -560,47 +681,7 @@ extends \PHPUnit_Framework_TestCase {
 		;
 	}
 	
-	private function writeClass($className)
-	{
-		
-		return <<<CLASS
-<?php
-namespace TestNamespace;
-		use \PO\Application;
-		use \PO\Application\Dispatchable;
-		use \PO\Application\Dispatchable\Mvc\Controller;
-		class $className
-		extends Controller
-		{
-			private \$application;
-			public function dispatch(Application \$application, \$pathVariables = null)
-			{
-				\$this->application = \$application;
-				if (\$application->hasExtension('outputApplicationClass')) {
-					echo get_class(\$application);
-					return;
-				}
-				if (\$application->hasExtension('throwException')) {
-					throw new Dispatchable\MvcTestException('This is an exception');
-				}
-				if (is_array(\$pathVariables)) {
-					foreach (\$pathVariables as \$key => \$value) echo "\$key => \$value";
-					return;
-				}
-				echo 'I\'m in \TestNamespace\\$className';
-			}
-			public function getTemplateVariables(){
-				if (\$this->application->hasExtension('outputInvalidTemplateVariables')) {
-					return ['none', 'associative'];
-				}
-				return ['content' => 'Test value'];
-			}
-		}
-		
-CLASS;
-	
-	}
-	
 }
 
+class MvcTestController extends Controller {}
 class MvcTestException extends \Exception {}

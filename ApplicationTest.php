@@ -13,6 +13,7 @@ extends \PHPUnit_Framework_TestCase {
 	
 	private $mDispatchable;
 	private $mResponse;
+	private $mIoCContainer;
 	private $mBootstrap;
 	private $mBootstrap2;
 	
@@ -20,6 +21,7 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->mDispatchable = $this->getMock('\PO\Application\IDispatchable');
 		$this->mResponse = $this->getMock('\PO\Http\Response');
+		$this->mIoCContainer = $this->getMock('\PO\IoCContainer');
 		$this->mBootstrap = $this->getMock('\PO\Application\IBootstrap');
 		$this->mBootstrap2 = $this->getMock('\PO\Application\IBootstrap');
 		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
@@ -28,37 +30,50 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function tearDown()
 	{
-		$this->mDispatchable = null;
-		$this->mResponse = null;
-		$this->mBootstrap = null;
-		$this->mBootstrap2 = null;
-		$this->mErrorHandler = null;
+		unset($this->mDispatchable);
+		unset($this->mResponse);
+		unset($this->mIoCContainer);
+		unset($this->mBootstrap);
+		unset($this->mBootstrap2);
+		unset($this->mErrorHandler);
 		parent::tearDown();
 	}
 	
-	// @todo Catch all errors and 500
-	
 	public function testApplicationCanBeInstantiated()
 	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$this->assertInstanceOf('\\PO\\Application', $application);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
+		$this->assertInstanceOf('\PO\Application', $application);
 	}
 	
 	public function testApplicationRequiresDispatchableObject()
 	{
-		$this->setExpectedException('\\PHPUnit_Framework_Error');
-		$application = new Application(null, $this->mResponse);
+		$this->setExpectedException('\PHPUnit_Framework_Error');
+		$application = new Application(null, $this->mResponse, $this->mIoCContainer);
 	}
 	
 	public function testApplicationRequiresResponseObject()
 	{
-		$this->setExpectedException('\\PHPUnit_Framework_Error');
-		$application = new Application($this->mDispatchable);
+		$this->setExpectedException('\PHPUnit_Framework_Error');
+		$application = new Application($this->mDispatchable, null, $this->mIoCContainer);
+	}
+	
+	public function testApplicationRequiresIoCContainerObject()
+	{
+		$this->setExpectedException('\PHPUnit_Framework_Error');
+		$application = new Application($this->mDispatchable, $this->mResponse);
 	}
 	
 	public function testCallingRunOnApplicationCallsDispatchOnDispatchable()
 	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -71,7 +86,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testRunMethodReturnsSelf()
 	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -79,9 +98,13 @@ extends \PHPUnit_Framework_TestCase {
 		$this->assertSame($application, $application->run());
 	}
 	
-	public function testApplicationIsPassedToDispatchable()
+	public function testResponseObjectIsPassedToDispatchable()
 	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -89,13 +112,17 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mDispatchable
 			->expects($this->once())
 			->method('dispatch')
-			->with($this->isInstanceOf('\PO\Application'));
+			->with($this->mResponse);
 		$application->run();
 	}
 	
-	public function testResponseObjectIsPassedToDispatchable()
+	public function testIoCContainerIsPassedToDispatchable()
 	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -105,7 +132,7 @@ extends \PHPUnit_Framework_TestCase {
 			->method('dispatch')
 			->with(
 				$this->anything(),
-				$this->isInstanceOf('\PO\Http\Response')
+				$this->mIoCContainer
 			);
 		$application->run();
 	}
@@ -116,18 +143,26 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('isInitialised')
 			->will($this->returnValue(true));
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$application->run();
 	}
 	
 	public function testApplicationThrowsIfResponseIsNotSetDuringDispatch()
 	{
-		$this->setExpectedException('\\RuntimeException');
+		$this->setExpectedException('\RuntimeException');
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
 			->will($this->returnValue(false));
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$application->run();
 	}
 	
@@ -140,7 +175,11 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->once())
 			->method('process');
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$application->run();
 	}
 	
@@ -149,14 +188,15 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			array($this->mBootstrap, $this->mBootstrap2)
 		);
-		$this->assertInstanceOf('\\PO\\Application', $application);
+		$this->assertInstanceOf('\PO\Application', $application);
 	}
 	
 	public function testApplicationDoesNotAcceptSingleBootstrap()
 	{
-		$this->setExpectedException('\\PHPUnit_Framework_Error');
+		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
@@ -166,10 +206,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testApplicationRejectsNonIBootstraps()
 	{
-		$this->setExpectedException('\\InvalidArgumentException');
+		$this->setExpectedException('\InvalidArgumentException');
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			array($this->mBootstrap, new \stdClass())
 		);
 	}
@@ -189,12 +230,13 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			array($this->mBootstrap, $this->mBootstrap2)
 		);
 		$application->run();
 	}
 	
-	public function testEachBootstrapIsPassedApplicationObject()
+	public function testEachBootstrapIsPassedIoCContainer()
 	{
 		$this->mResponse
 			->expects($this->any())
@@ -203,80 +245,18 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			array($this->mBootstrap, $this->mBootstrap2)
 		);
 		$this->mBootstrap
 			->expects($this->atLeastOnce())
 			->method('run')
-			->with($this->isInstanceOf('\PO\Application'));
+			->with($this->mIoCContainer);
 		$this->mBootstrap2
 			->expects($this->atLeastOnce())
 			->method('run')
-			->with($this->isInstanceOf('\PO\Application'));
+			->with($this->mIoCContainer);
 		$application->run();
-	}
-	
-	public function testApplicationCanBeExtendedAndDataRetrieved()
-	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', 'value');
-		$this->assertEquals('value', $application->getKey());
-	}
-	
-	public function testApplicationExtensionCanNotBeOverwritten()
-	{
-		$this->setExpectedException('\\RuntimeException');
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', 'value');
-		$application->extend('key', 'new value');
-	}
-	
-	public function testExceptionIsThrownIfExtensionIsNotRegistered()
-	{
-		$this->setExpectedException('\\BadMethodCallException');
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->getSomething();
-	}
-	
-	public function testApplicationExtendedWithFunctionReturnsReturnValue()
-	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', function(){
-			return 'function value';
-		});
-		$this->assertEquals('function value', $application->getKey());
-	}
-	
-	public function testExtensionFunctionCanBeProvidedWithAnArgumentAtResolveTime()
-	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', function($value){
-			return $value * 2;
-		});
-		$this->assertEquals(10, $application->getKey(5));
-	}
-	
-	public function testExtensionFunctionCanOnlyBePassedOneResolveTimeArgument()
-	{
-		$this->setExpectedException('\\BadMethodCallException');
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', function($value){});
-		$application->getKey('first', 'second');
-	}
-	
-	public function testExtensionFunctionCanBeProvidedWithAnArgumentAtDeclareTime()
-	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$application->extend('key', function($resolve, $declare){
-			return $declare . '!';
-		}, 'Hello');
-		$this->assertEquals('Hello!', $application->getKey());
-	}
-	
-	public function testExtendMethodReturnsSelf()
-	{
-		$application = new Application($this->mDispatchable, $this->mResponse);
-		$this->assertSame($application, $application->extend('key', 'value'));
 	}
 	
 	public function testResponseIsSetTo500IfExceptionIsThrownWhilstDispatching()
@@ -291,7 +271,11 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->once())
 			->method('set500');
-		$application = new Application($this->mDispatchable, $this->mResponse);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer
+		);
 		$application->run();
 	}
 	
@@ -310,6 +294,7 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			[$this->mBootstrap]
 		);
 		$application->run();
@@ -320,10 +305,11 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			[],
 			$this->mErrorHandler
 		);
-		$this->assertInstanceOf('\\PO\\Application', $application);
+		$this->assertInstanceOf('\PO\Application', $application);
 	}
 	
 	public function testIErrorHandlerSetupMethodIsCalled()
@@ -331,16 +317,14 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			[],
 			$this->mErrorHandler
 		);
 		$this->mErrorHandler
 			->expects($this->once())
 			->method('setup')
-			->with(
-				$this->equalTo($application),
-				$this->mResponse
-			);
+			->with($this->mResponse);
 		$this->mResponse
 			->expects($this->any())
 			->method('isInitialised')
@@ -360,6 +344,7 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			[],
 			$this->mErrorHandler
 		);
@@ -382,6 +367,7 @@ extends \PHPUnit_Framework_TestCase {
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
+			$this->mIoCContainer,
 			[$this->mBootstrap],
 			$this->mErrorHandler
 		);
@@ -392,8 +378,6 @@ extends \PHPUnit_Framework_TestCase {
 		$application->run();
 	}
 	
-	// @todo Except exception handler to set response
-	// @todo If not, do it ourselves
 	// @todo Can we catch non exceptions? Syntax errors and the like
 	
 }
