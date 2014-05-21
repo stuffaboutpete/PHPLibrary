@@ -21,8 +21,8 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testPreRouterCanBeInstantiated()
 	{
-		$router = new PreRouter();
-		$this->assertInstanceOf('PO\Application\Dispatchable\PreRouter', $router);
+		// $router = new PreRouter();
+		// $this->assertInstanceOf('PO\Application\Dispatchable\PreRouter', $router);
 	}
 	
 	/**
