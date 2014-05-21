@@ -403,13 +403,64 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testProvidedMethodDependenciesMustBeInsideAnArray()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call(
 			$object,
 			'testMethod4',
 			new \stdClass()
+		);
+	}
+	
+	public function testSingletonStyleDependenciesCanBeProvidedToThisMethodCallOnly()
+	{
+		$stdObject = new \stdClass();
+		$container = new IoCContainer();
+		$object = new IoCContainerTestI();
+		$container->call(
+			$object,
+			'testMethod',
+			[],
+			[
+				$stdObject
+			]
+		);
+		$this->assertSame($stdObject, $object->arg);
+		$container->call($object, 'testMethod');
+		$this->assertNotSame($stdObject, $object->arg);
+	}
+	
+	public function testSingletonStyleDependenciesMustBeObjects()
+	{
+		$this->setExpectedException('\InvalidArgumentException');
+		$container = new IoCContainer();
+		$object = new IoCContainerTestI();
+		$container->call(
+			$object,
+			'testMethod',
+			[],
+			[
+				'Not an object'
+			]
+		);
+	}
+	
+	public function testSingletonStyleDependencyCannotBeProvidedIfSingletonAlreadyExists()
+	{
+		$this->setExpectedException('\RuntimeException');
+		$stdObject1 = new \stdClass();
+		$stdObject2 = new \stdClass();
+		$container = new IoCContainer();
+		$container->registerSingleton($stdObject1);
+		$object = new IoCContainerTestI();
+		$container->call(
+			$object,
+			'testMethod',
+			[],
+			[
+				$stdObject2
+			]
 		);
 	}
 	
@@ -423,6 +474,7 @@ extends \PHPUnit_Framework_TestCase {
 			$object,
 			'testMethod3',
 			[],
+			[],
 			[
 				'PO\IoCContainerTestA' => [$stdObject]
 			]
@@ -432,12 +484,13 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testProvidedMethodDownstreamDependenciesMustBeInsideAnArray()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException('\PHPUnit_Framework_Error');
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call(
 			$object,
 			'testMethod3',
+			[],
 			[],
 			new \stdClass()
 		);
@@ -452,6 +505,7 @@ extends \PHPUnit_Framework_TestCase {
 		$container->call(
 			$object,
 			'testMethod5',
+			[],
 			[],
 			[
 				'PO\IoCContainerTestA' => [$stdObject]
@@ -476,6 +530,7 @@ extends \PHPUnit_Framework_TestCase {
 		IoCContainer::call(
 			$object,
 			'testMethod5',
+			[],
 			[],
 			[
 				'PO\IoCContainerTestA' => [$stdObject]
@@ -582,6 +637,12 @@ extends \PHPUnit_Framework_TestCase {
 			$mContainment2,
 			$mContainment3
 		);
+	}
+	
+	public function testContainerUsesItselfAsSingletonForIoCContainerInstances()
+	{
+		$container = new IoCContainer();
+		$this->assertSame($container, $container->resolve('PO\IoCContainer'));
 	}
 	
 }

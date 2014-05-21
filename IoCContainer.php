@@ -60,9 +60,13 @@ class IoCContainer
 	 */
 	public function __construct()
 	{
+		
 		foreach (func_get_args() as $containment) {
 			$this->addContainment($containment);
 		}
+		
+		$this->registerSingleton($this);
+		
 	}
 	
 	/**
@@ -80,6 +84,7 @@ class IoCContainer
 	 * @throws BadMethodCallException   If alias is an interface and method is called statically
 	 * @throws InvalidArgumentException If alias is not a valid class or interface
 	 * @throws RuntimeException         If a non typed dependency is not provided
+	 * @todo   Should accept $thisCallOnlyDependencies in the same way as call()
 	 */
 	public function resolve($alias, $dependencies = [], $downstreamDependencies = [])
 	{
@@ -152,7 +157,13 @@ class IoCContainer
 		
 	}
 	
-	public function call($object, $method, $dependencies = [], $downstreamDependencies = [])
+	public function call(
+		$object,
+		$method,
+		array $dependencies = [],
+		array $thisCallOnlyDependencies = [],
+		array $downstreamDependencies = []
+	)
 	{
 		
 		if (!is_object($object)) {
@@ -163,21 +174,12 @@ class IoCContainer
 			throw new \InvalidArgumentException('Provided method does not exist on object');
 		}
 		
-		// If the dependencies or the downstream
-		// dependencies are not in an array,
-		// throw an exception
-		if (!is_array($dependencies)) {
-			throw new \InvalidArgumentException('Dependencies must be an array');
-		}
-		if (!is_array($downstreamDependencies)) {
-			throw new \InvalidArgumentException('Downstream dependencies must be an array');
-		}
-		
 		$arguments = self::getArguments(
 			new \ReflectionMethod($object, $method),
 			self::isStatic(),
 			$dependencies,
-			$downstreamDependencies
+			$downstreamDependencies,
+			$thisCallOnlyDependencies
 		);
 		
 		return call_user_func_array([$object, $method], $arguments);
@@ -188,7 +190,8 @@ class IoCContainer
 		\ReflectionMethod $method,
 		$isStatic,
 		$dependencies,
-		$downstreamDependencies
+		$downstreamDependencies,
+		$thisCallOnlyDependencies = []
 	)
 	{
 		
@@ -236,6 +239,23 @@ class IoCContainer
 				throw new \RuntimeException(
 					'A dependency must be provided for non-typed arguments'
 				);
+			}
+			
+			foreach ($thisCallOnlyDependencies as $dependency) {
+				if (!is_object($dependency)) {
+					throw new \InvalidArgumentException(
+						'Dependencies for use in this call ony must be objects'
+					);
+				}
+				if (!$isStatic && isset($this->singletons[get_class($dependency)])) {
+					throw new \RuntimeException(
+						'Dependency provided for this call only conflicts with a pre-registered singleton object'
+					);
+				}
+				if (get_class($dependency) == $type) {
+					$arguments[] = $dependency;
+					continue 2;
+				}
 			}
 			
 			// If the argument type refers to a

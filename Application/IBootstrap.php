@@ -2,11 +2,11 @@
 
 namespace PO\Application;
 
-use PO\Application;
+use PO\IoCContainer;
 
 interface IBootstrap
 {
 	
-	public function run(Application $application);
+	public function run(IoCContainer $container);
 	
 }

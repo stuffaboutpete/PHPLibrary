@@ -2,11 +2,12 @@
 
 namespace PO\Application\Dispatchable;
 
-use PO\Application;
 use PO\Application\IDispatchable;
 use PO\Application\Dispatchable\Rest\IEndpoint;
+use PO\Application\Dispatchable\Rest\RouteVariables;
 use PO\Config;
 use PO\Http\Response;
+use PO\IoCContainer;
 
 /**
  * Rest
@@ -101,24 +102,26 @@ implements IDispatchable
 	}
 	
 	/**
+	 * Needs rewriting
+	 * 
 	 * Initiates the process of identifying and
 	 * running an instance of IEndpoint based
 	 * on the request path and method. If an
 	 * optional route string is provided it
 	 * should be in the format 'METHOD /path'.
 	 * 
-	 * @param  PO\Application   $application    An application object to pass to the endpoint
-	 * @param  PO\Http\Response $response       A response object which will be set downstream
-	 * @param  string               $route optional Used in place of the server request data
+	 * @param  PO\Http\Response $response     A response object which will be set downstream
+	 * @param  PO\IoCContainer  $ioCContainer An IoC container to build and run the endpoint
+	 * @param  string           $route        optional Used in place of the server request data
 	 * @return null
 	 */
-	public function dispatch(Application $application, Response $response, $route = null)
+	public function dispatch(Response $response, IoCContainer $ioCContainer, $route = null)
 	{
 		
 		// Try to identify an endpoint
 		// and catch any expected errors
 		try {
-			$route = $this->getRoute($response, $route);
+			$route = $this->getRoute($ioCContainer, $route);
 		} catch (Rest\Exception $e) {
 			switch ($e->getCode()) {
 				
@@ -144,17 +147,22 @@ implements IDispatchable
 			
 		}
 		
-		// Dispatch the identified endpoint,
-		// ensuring that nothing is output
-		// to the screen and that any exceptions
+		// Dispatch the identified endpoint
+		// using the IoC container, ensuring
+		// that nothing is output to the
+		// screen and that any exceptions
 		// will cause the response to be set
 		// to 500 (Internal server error)
 		try {
 			ob_start();
-			$route['object']->dispatch(
-				$application,
-				$response,
-				$route['variables']
+			$ioCContainer->call(
+				$route['object'],
+				'dispatch',
+				[],
+				[
+					$response,
+					new RouteVariables($route['variables'])
+				]
 			);
 			ob_end_clean();
 		} catch (\Exception $e) {
@@ -167,11 +175,14 @@ implements IDispatchable
 	 * Attempts to match an endpoint
 	 * based on the request path and method
 	 * 
-	 * @param  PO\Http\Response $response       A response object which will be set downstream
-	 * @param  string               $route optional Used in place of the server request data
-	 * @return array                                An IEndpoint and any associated route variables
+	 * @param  PO\IoCContainer $ioCContainer Used to build the endpoint
+	 * @param  string          $route        optional Used in place of the server request data
+	 * @throws PO\Application\Dispatchable\Rest\Exception If the identified class does not exist
+	 * @throws PO\Application\Dispatchable\Rest\Exception If identified class is not an IEndpoint
+	 * @throws PO\Application\Dispatchable\Rest\Exception If no endpoint can be identified
+	 * @return array An IEndpoint and any associated route variables
 	 */
-	private function getRoute(Response $response, $route = null)
+	private function getRoute($ioCContainer, $route = null)
 	{
 		
 		// If we have a user supplied route,
@@ -248,8 +259,9 @@ implements IDispatchable
 			}
 			
 			// Create an instance of the endpoint
-			// and ensure it is an instance of IEndpoint
-			$route = new $route['class']();
+			$route = $ioCContainer->resolve($route['class']);
+			
+			// Ensure it is an instance of IEndpoint
 			if (!$route instanceof IEndpoint) {
 				throw new Rest\Exception(
 					Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT

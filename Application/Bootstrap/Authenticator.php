@@ -2,10 +2,10 @@
 
 namespace PO\Application\Bootstrap;
 
-use PO\Application;
-use PO\Application\IBootstrap;
 use PO\Application\Bootstrap\Authenticator\Exception;
+use PO\Application\IBootstrap;
 use PO\Helper\Cookie as CookieHelper;
+use PO\IoCContainer;
 
 class Authenticator
 implements IBootstrap
@@ -16,6 +16,7 @@ implements IBootstrap
 	private $cookiesSetDuringThisCall = [];
 	private $databaseAccessTypesGivenThisCall = [];
 	private $pdo;
+	private $ioCContainer;
 	
 	public function __construct(CookieHelper $cookieHelper, \PDO $pdo = null)
 	{
@@ -23,12 +24,10 @@ implements IBootstrap
 		$this->pdo = $pdo;
 	}
 	
-	public function run(Application $application)
+	public function run(IoCContainer $ioCContainer)
 	{
-		if (!isset($this->pdo) && $application->hasExtension('db')) {
-			$this->pdo = $application->getDb();
-		}
-		$application->extend('authenticator', $this);
+		$ioCContainer->registerSingleton($this);
+		$this->ioCContainer = $ioCContainer;
 	}
 	
 	/**
@@ -41,7 +40,7 @@ implements IBootstrap
 		
 		if (!isset($this->authenticatedUser) && $accessToken = $this->accessTokenIsProvided()) {
 			
-			$selectUserStatement = $this->pdo->prepare(
+			$selectUserStatement = $this->getPdo()->prepare(
 				'SELECT id FROM auth_user WHERE access_token = :access_token'
 			);
 			
@@ -72,7 +71,7 @@ implements IBootstrap
 	public function identityIsRegistered($identifier)
 	{
 		if (isset($this->authenticatedUser)) return true;
-		$statement = $this->pdo->prepare(
+		$statement = $this->getPdo()->prepare(
 			'SELECT id FROM auth_user WHERE identifier = :identifier'
 		);
 		$statement->execute(['identifier' => $identifier]);
@@ -83,7 +82,7 @@ implements IBootstrap
 	{
 		if ($this->userIsAuthenticated()) {
 			
-			$giveAccessStatement = $this->pdo->prepare(
+			$giveAccessStatement = $this->getPdo()->prepare(
 				'INSERT INTO auth_user_access_type (auth_user_id, access_type) ' .
 				'VALUES (:user_id, :access_type)'
 			);
@@ -109,7 +108,7 @@ implements IBootstrap
 			
 			if (in_array($accessType, $this->databaseAccessTypesGivenThisCall)) return true;
 			
-			$hasAccessStatement = $this->pdo->prepare(
+			$hasAccessStatement = $this->getPdo()->prepare(
 				'SELECT auth_user_access_type.access_type FROM auth_user_access_type ' .
 				'INNER JOIN auth_user ON auth_user_access_type.auth_user_id = auth_user.id ' .
 				'WHERE auth_user.id = :user_id ' .
@@ -144,7 +143,7 @@ implements IBootstrap
 		
 		if (isset($password)) {
 			
-			$insertStatement = $this->pdo->prepare(
+			$insertStatement = $this->getPdo()->prepare(
 				'INSERT INTO auth_user (identifier, password_hash) ' .
 				'VALUES (:identifier, :password_hash)'
 			);
@@ -156,7 +155,7 @@ implements IBootstrap
 			
 		} else {
 			
-			$insertStatement = $this->pdo->prepare(
+			$insertStatement = $this->getPdo()->prepare(
 				'INSERT INTO auth_user (identifier) VALUES (:identifier)'
 			);
 			
@@ -168,11 +167,11 @@ implements IBootstrap
 		
 		foreach ($this->getAccessCookies() as $key => $value) {
 			
-			if (!isset($newUserId)) $newUserId = $this->pdo->lastInsertId();
+			if (!isset($newUserId)) $newUserId = $this->getPdo()->lastInsertId();
 			
 			$this->cookieHelper->revoke($key, $value);
 			
-			$giveAccessStatement = $this->pdo->prepare(
+			$giveAccessStatement = $this->getPdo()->prepare(
 				'INSERT INTO auth_user_access_type (auth_user_id, access_type) ' .
 				'VALUES (:user_id, :access_type)'
 			);
@@ -189,7 +188,7 @@ implements IBootstrap
 	public function authenticateUser($identifier, $password = null)
 	{
 		
-		$selectUserStatement = $this->pdo->prepare(
+		$selectUserStatement = $this->getPdo()->prepare(
 			'SELECT id, password_hash FROM auth_user WHERE identifier = :identifier'
 		);
 		
@@ -211,7 +210,7 @@ implements IBootstrap
 		
 		$accessToken = $this->generateAccessToken();
 		
-		$saveAccessTokenStatement = $this->pdo->prepare(
+		$saveAccessTokenStatement = $this->getPdo()->prepare(
 			'UPDATE auth_user SET access_token = :access_token WHERE id = :id'
 		);
 		
@@ -254,6 +253,21 @@ implements IBootstrap
 			if (substr($key, 0, 12) == 'access_type_') $accessCookies[$key] = $value;
 		}
 		return $accessCookies;
+	}
+	
+	private function getPdo()
+	{
+		if (!isset($this->pdo)) {
+			try {
+				$this->pdo = $this->ioCContainer->resolve('PDO');
+			} catch (\RuntimeException $exception) {
+				// RuntimeException indicates that the
+				// ioc container doesn't have a pdo
+				// singleton and has tried to create one
+				throw new Exception(Exception::NO_PDO_CONNECTION_IS_AVAILABLE);
+			}
+		}
+		return $this->pdo;
 	}
 	
 }

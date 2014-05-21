@@ -2,19 +2,17 @@
 
 namespace PO\Application\ErrorHandler;
 
-use PO\Application;
+use PO\Application\IErrorHandler;
 use PO\Http\Response;
 
 class View
-implements Application\IErrorHandler
+implements IErrorHandler
 {
 	
-	private $application;
 	private $response;
 	
-	public function setup(Application $application, Response $response)
+	public function setup(Response $response)
 	{
-		$this->application = $application;
 		$this->response = $response;
 		ini_set('display_errors', 0);
 	}

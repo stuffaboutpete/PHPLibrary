@@ -2,15 +2,14 @@
 
 namespace PO\Application\Bootstrap;
 
-use PO\Application;
 use PO\Application\IBootstrap;
+use PO\IoCContainer;
 
 class Pdo
 implements IBootstrap
 {
 	
 	private $dbName;
-	private $applicationExtensionName;
 	private $databaseType;
 	private $host;
 	private $username;
@@ -18,7 +17,6 @@ implements IBootstrap
 	
 	public function __construct(
 		$dbName						= null,
-		$applicationExtensionName	= 'db',
 		$databaseType				= 'mysql',
 		$host						= null,
 		$username					= null,
@@ -28,7 +26,6 @@ implements IBootstrap
 		
 		// Save provided settings
 		$this->host						= $host;
-		$this->applicationExtensionName	= $applicationExtensionName;
 		$this->databaseType				= $databaseType;
 		$this->dbName					= $dbName;
 		$this->username					= $username;
@@ -36,7 +33,7 @@ implements IBootstrap
 		
 	}
 	
-	public function run(Application $application)
+	public function run(IoCContainer $ioCContainer)
 	{
 		
 		// Setup some default values
@@ -47,10 +44,17 @@ implements IBootstrap
 			'password'	=> 'password'
 		];
 		
-		// If we have a config setup, overwrite
+		try {
+			$config = $ioCContainer->resolve('PO\Config');
+		} catch (\RuntimeException $exception) {
+			// There must be no singleton config
+			// registered as the IoCContainer has
+			// tried to create one
+		}
+		
+		// If we have a config object, overwrite
 		// defaults with values from the config
-		if ($application->hasExtension('config')) {
-			$config = $application->getConfig();
+		if (isset($config)) {
 			try {
 				$config->get('db');
 				$defaults = array_merge($defaults, $config->get('db'));
@@ -80,17 +84,13 @@ implements IBootstrap
 		
 		// @todo Type checking - specifically database type
 		
-		// Create an application extension which
-		// is a PDO object. By default this can be
-		// accessed via $application->getDb()
-		$application->extend(
-			$this->applicationExtensionName,
-			new \PDO(
-				"$this->databaseType:host=$this->host;dbname=$dbName",
-				$username,
-				$password
-			)
-		);
+		// Register a new PDO object as a
+		// singleton against the IoC container
+		$ioCContainer->registerSingleton(new \PDO(
+			"$this->databaseType:host=$this->host;dbname=$dbName",
+			$username,
+			$password
+		));
 		
 	}
 	

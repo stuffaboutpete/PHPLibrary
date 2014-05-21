@@ -2,8 +2,8 @@
 
 namespace PO\Application\Bootstrap;
 
-use PO\Application;
 use PO\Application\IBootstrap;
+use PO\IoCContainer;
 
 class Config
 implements IBootstrap
@@ -18,13 +18,13 @@ implements IBootstrap
 		$this->environments = $environments;
 	}
 	
-	public function run(Application $application)
+	public function run(IoCContainer $ioCContainer)
 	{
 		if (!isset($this->pathToConfig)) return;
-		$application->extend(
-			'config',
-			new \PO\Config(file_get_contents($this->pathToConfig), $this->environments)
-		);
+		$ioCContainer->registerSingleton(new \PO\Config(
+			file_get_contents($this->pathToConfig),
+			$this->environments
+		));
 	}
 	
 }
