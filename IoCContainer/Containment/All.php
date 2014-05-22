@@ -14,6 +14,7 @@ implements IContainment
 	{
 		
 		$container->addContainment(new Containment\Application());
+		$container->addContainment(new Containment\HttpRequest());
 		
 	}
 	
