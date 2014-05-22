@@ -3,7 +3,7 @@
 namespace PO\Application\Dispatchable;
 
 use PO\Application;
-use PO\Application\IErrorHandler;
+use PO\Application\IExceptionHandler;
 use PO\Application\IDispatchable;
 use PO\Application\Dispatchable\Mvc\Controller;
 use PO\Application\Dispatchable\Mvc\IControllerIdentifier;
@@ -29,7 +29,7 @@ use PO\Helper\ArrayType;
  * 
  * Exceptions that occur in identifying
  * a route or whilst dispatching are
- * handled by an IErrorHandler object.
+ * handled by an IExceptionHandler object.
  */
 class Mvc
 implements IDispatchable
@@ -47,16 +47,16 @@ implements IDispatchable
 	private $controllerIdentifier;
 	
 	/**
-	 * Error handler
+	 * Exception handler
 	 * 
-	 * An instance of IErrorHandler which
+	 * An instance of IExceptionHandler which
 	 * is provided with any exception thrown
 	 * whilst identifying or dispatching
 	 * a controller or template
 	 * 
-	 * @var PO\Application\IErrorHandler
+	 * @var PO\Application\IExceptionHandler
 	 */
-	private $errorHandler;
+	private $exceptionHandler;
 	
 	/**
 	 * Response object
@@ -65,7 +65,7 @@ implements IDispatchable
 	 * this object is dispatched.
 	 * It is set with controller
 	 * content or provided to the
-	 * error handler if required.
+	 * exception handler if required.
 	 * 
 	 * @var PO\Http\Response
 	 */
@@ -77,17 +77,17 @@ implements IDispatchable
 	 * Provide a location to find controllers
 	 * both in terms of file system and namespace
 	 * 
-	 * @param string          $controllerPath          Root directory where controllers are found
-	 * @param string          $controllerBaseNamespace Root namespace where controllers are found
+	 * @param string $controllerPath          Root directory where controllers are found
+	 * @param string $controllerBaseNamespace Root namespace where controllers are found
 	 * @return PO\Application\Dispatchable\Mvc self
 	 */
 	public function __construct(
 		IControllerIdentifier	$controllerIdentifier,
-		IErrorHandler			$errorHandler = null
+		IExceptionHandler		$exceptionHandler = null
 	)
 	{
 		$this->controllerIdentifier = $controllerIdentifier;
-		$this->errorHandler = $errorHandler;
+		$this->exceptionHandler = $exceptionHandler;
 	}
 	
 	/**
@@ -97,7 +97,7 @@ implements IDispatchable
 	 * both to the provided response object.
 	 * 
 	 * Note that no exceptions are thrown if
-	 * instance of IErrorHandler is provided
+	 * instance of IExceptionHandler is provided
 	 * to constructor.
 	 * 
 	 * @param  PO\Http\Response $response     A response object which will be set during dispatch
@@ -116,29 +116,22 @@ implements IDispatchable
 	{
 		
 		// Save the response object
-		// for use in error handling
+		// for use in exception handling
 		$this->response = $response;
-		
-		// Set up the error handler
-		// if provided
-		if ($this->hasErrorHandler()) {
-			$this->errorHandler->setup($response);
-			register_shutdown_function([$this->errorHandler, 'handleError']);
-		}
 		
 		// Attempt to identify a controller,
 		// template and path variables from
 		// our controller identifier. Pass
-		// any exception to the error handler
-		// if provided, else rethrow.
+		// any exception to the exception
+		// handler if provided, else rethrow.
 		try {
 			$this->controllerIdentifier->receivePath($_SERVER['REQUEST_URI']);
 			$controller = $this->controllerIdentifier->getControllerClass();
 			$templatePath = $this->controllerIdentifier->getTemplatePath();
 			$pathVariables = $this->controllerIdentifier->getPathVariables();
 		} catch (\Exception $exception) {
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
 				return;
 			} else {
 				throw $exception;
@@ -154,8 +147,8 @@ implements IDispatchable
 				Exception::CONTROLLER_CLASS_DOES_NOT_EXIST,
 				"Class name: $controller"
 			);
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception, 500);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
 				return;
 			} else {
 				throw $exception;
@@ -177,8 +170,8 @@ implements IDispatchable
 					Exception::CONTROLLER_CLASS_IS_NOT_CONTROLLER,
 					'Class name: ' . get_class($controller)
 				);
-				if ($this->hasErrorHandler()) {
-					$this->handleException($exception, 500);
+				if ($this->hasExceptionHandler()) {
+					$this->handleException($exception, $response);
 					return;
 				} else {
 					throw $exception;
@@ -193,8 +186,8 @@ implements IDispatchable
 			// to run it via inversion of control.
 			if (!method_exists($controller, 'dispatch')) {
 				$exception = new Exception(Exception::CONTROLLER_HAS_NO_DISPATCH_METHOD);
-				if ($this->hasErrorHandler()) {
-					$this->handleException($exception, 500);
+				if ($this->hasExceptionHandler()) {
+					$this->handleException($exception, $response);
 					return;
 				} else {
 					throw $exception;
@@ -211,8 +204,8 @@ implements IDispatchable
 				Exception::CONTROLLER_TEMPLATE_DOES_NOT_EXIST,
 				"Template path: $templatePath"
 			);
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception, 500);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
 				return;
 			} else {
 				throw $exception;
@@ -227,8 +220,8 @@ implements IDispatchable
 			$exception = new Exception(
 				Exception::NO_CONTROLLER_CLASS_OR_TEMPLATE_COULD_BE_IDENTIFIED
 			);
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception, 404);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response, 404);
 			} else {
 				$response->set404();
 			}
@@ -249,8 +242,8 @@ implements IDispatchable
 						? 'Array ' . implode(', ', $pathVariables)
 						: gettype($pathVariables))
 				);
-				if ($this->hasErrorHandler()) {
-					$this->handleException($exception, 500);
+				if ($this->hasExceptionHandler()) {
+					$this->handleException($exception, $response);
 					return;
 				} else {
 					throw $exception;
@@ -271,7 +264,7 @@ implements IDispatchable
 		// Run the controller via the
 		// inversion of control container
 		// whilst handling any exceptions
-		// if error handler is available
+		// if exception handler is available
 		try {
 			if (is_object($controller)) {
 				$ioCContainer->call(
@@ -283,8 +276,8 @@ implements IDispatchable
 			}
 		} catch (\Exception $exception) {
 			ob_end_clean();
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
 				return;
 			} else {
 				throw $exception;
@@ -308,8 +301,8 @@ implements IDispatchable
 						? 'Array ' . implode(', ', $templateVariables)
 						: gettype($templateVariables))
 				);
-				if ($this->hasErrorHandler()) {
-					$this->handleException($exception, 500);
+				if ($this->hasExceptionHandler()) {
+					$this->handleException($exception, $response);
 					return;
 				} else {
 					throw $exception;
@@ -333,8 +326,8 @@ implements IDispatchable
 			if (file_exists($templatePath)) include $templatePath;
 		} catch (\Exception $exception) {
 			ob_end_clean();
-			if ($this->hasErrorHandler()) {
-				$this->handleException($exception);
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
 				return;
 			} else {
 				throw $exception;
@@ -355,36 +348,36 @@ implements IDispatchable
 	
 	/**
 	 * Returns whether this object has
-	 * an instance of IErrorHandler
+	 * an instance of IExceptionHandler
 	 * 
 	 * @return boolean
 	 */
-	private function hasErrorHandler()
+	private function hasExceptionHandler()
 	{
-		return isset($this->errorHandler);
+		return isset($this->exceptionHandler);
 	}
 	
 	/**
 	 * Passes provided exception to
-	 * error handler and ensures that
-	 * the response object is set to
-	 * the given response code or 500
+	 * exception handler and ensures
+	 * that the response object is set
+	 * to the given response code or 500
 	 * 
 	 * @param  Exception  $exception                        The exception to handle
 	 * @param  int|string $recommendedResponseCode optional The response code to set the response to
 	 * @return null
 	 */
-	private function handleException(\Exception $exception, $recommendedResponseCode = null)
+	private function handleException(\Exception $exception, Response $response, $responseCode = 500)
 	{
 		// Should we recieve a message?
-		$method = 'set' . (isset($recommendedResponseCode) ? $recommendedResponseCode : 500);
+		$method = 'set' . $responseCode;
 		try {
-			$this->errorHandler->handleException($exception, $recommendedResponseCode);
+			$this->exceptionHandler->handleException($exception, $response, $responseCode);
 		} catch (\Exception $exception) {
 			$this->response->$method($exception->getMessage() . $exception->getTraceAsString());
 		}
 		if (!$this->response->isInitialised()) {
-			$this->response->$method();
+			$this->response->$method($exception->getMessage() . $exception->getTraceAsString());
 		}
 	}
 	

@@ -6,39 +6,26 @@ class Debug
 extends \PO\View
 {
 	
-	public function __construct(\Exception $exception = null, $error = null, $responseCode = 500)
+	public function __construct(\Exception $exception, $responseCode)
 	{
 		
-		$templateVariables = [];
-		
-		$templateVariables['responseCode'] = $responseCode;
-		
-		if (isset($exception)) {
-			
-			$templateVariables['errorType'] = 'exception';
-			$templateVariables['message'] = htmlentities($exception->getMessage());
-			if (method_exists($exception, 'getSubMessage')) {
-				$templateVariables['subMessage'] = htmlentities($exception->getSubMessage());
-			}
-			$templateVariables['type'] = get_class($exception);
-			$templateVariables['code'] = $exception->getCode();
-			$templateVariables['class'] = $exception->getTrace()[0]['class'];
-			$templateVariables['fileName'] = $exception->getFile();
-			$templateVariables['lineNumber'] = $exception->getLine();
-			$templateVariables['stackTrace'] = $this->formatStackTrace($exception->getTrace());
-			
-		} else {
-			
-			$templateVariables['errorType'] = 'error';
-			$templateVariables['message'] = htmlentities($error['message']);
-			$templateVariables['type'] = $this->getErrorType($error['type']);
-			$templateVariables['code'] = $error['type'];
-			$templateVariables['fileName'] = $error['file'];
-			$templateVariables['lineNumber'] = $error['line'];
-			
+		$this->addTemplateVariable('responseCode', $responseCode);
+		$this->addTemplateVariable('message', htmlentities($exception->getMessage()));
+		if (method_exists($exception, 'getSubMessage')) {
+			$this->addTemplateVariable('subMessage', htmlentities($exception->getSubMessage()));
 		}
-		
-		foreach ($templateVariables as $key => $value) $this->addTemplateVariable($key, $value);
+		$this->addTemplateVariable('type', get_class($exception));
+		$this->addTemplateVariable('code', $exception->getCode());
+		$this->addTemplateVariable('class', $exception->getTrace()[0]['class']);
+		$this->addTemplateVariable('fileName', $exception->getFile());
+		$this->addTemplateVariable('lineNumber', $exception->getLine());
+		if (!($exception instanceof \ErrorException && count($exception->getTrace()) == 1)) {
+			$this->addTemplateVariable(
+				'stackTrace',
+				$this->formatStackTrace($exception->getTrace())
+			);
+		}
+		$this->addTemplateVariable('isError', $exception instanceof \ErrorException);
 		
 		parent::__construct();
 		
@@ -68,8 +55,9 @@ extends \PO\View
 						]);
 					}
 				}
+				$fileParts = explode('/', $call['file']);
 				array_push($simpleStackTrace, [
-					'fileName'		=> array_pop(explode('/', $call['file'])),
+					'fileName'		=> array_pop($fileParts),
 					'filePath'		=> $call['file'],
 					'lineNumber'	=> $call['line'],
 					'call'			=> "\\{$call['function']}()",
@@ -91,7 +79,8 @@ extends \PO\View
 					]);
 				}
 				if (isset($call['file'])) {
-					$fileName = array_pop(explode('/', $call['file']));
+					$fileParts = explode('/', $call['file']);
+					$fileName = array_pop($fileParts);
 					$filePath = $call['file'];
 				} else {
 					$fileName = '\\' . $stackTrace[$index + 1]['function'];
@@ -100,7 +89,7 @@ extends \PO\View
 				array_push($simpleStackTrace, [
 					'fileName'		=> $fileName,
 					'filePath'		=> $filePath,
-					'lineNumber'	=> $call['line'],
+					'lineNumber'	=> isset($call['line']) ? $call['line'] : null,
 					'call'			=> "{$call['class']}{$call['type']}{$call['function']}()",
 					'arguments'		=> $arguments
 				]);
@@ -133,23 +122,6 @@ extends \PO\View
 		} else if (is_object($argument)) {
 			return 'Object: ' . get_class($argument);
 		}
-	}
-	
-	private function getErrorType($code)
-	{
-		$errors = [
-			'E_ERROR'				=> E_ERROR,
-			'E_WARNING'				=> E_WARNING,
-			'E_PARSE'				=> E_PARSE,
-			'E_COMPILE_ERROR'		=> E_COMPILE_ERROR,
-			'E_RECOVERABLE_ERROR'	=> E_RECOVERABLE_ERROR,
-			'E_USER_ERROR'			=> E_USER_ERROR,
-			'E_USER_WARNING'		=> E_USER_WARNING
-		];
-		foreach ($errors as $key => $value) {
-			if ($value == $code) return $key;
-		}
-		return 'Unknown';
 	}
 	
 }

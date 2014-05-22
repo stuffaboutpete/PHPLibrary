@@ -54,7 +54,8 @@ class View
 		}
 		
 		$calledClass = new \ReflectionClass(get_called_class());
-		$calledClassName = array_pop(explode('\\', $calledClass->getName()));
+		$calledClassParts = explode('\\', $calledClass->getName());
+		$calledClassName = array_pop($calledClassParts);
 		$calledClassFile = $calledClass->getFileName();
 		
 		if (!is_null($template)) {
