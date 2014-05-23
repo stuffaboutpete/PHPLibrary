@@ -2,9 +2,10 @@
 
 namespace PO\Application\Dispatchable;
 
-use PO\Application\IDispatchable;
 use PO\Application\Dispatchable\Rest\IEndpoint;
 use PO\Application\Dispatchable\Rest\RouteVariables;
+use PO\Application\IDispatchable;
+use PO\Application\IExceptionHandler;
 use PO\Config;
 use PO\Http\Response;
 use PO\IoCContainer;
@@ -16,7 +17,11 @@ use PO\IoCContainer;
  * instances of IEndpoint based on a
  * provided config file associating
  * request method / request path
- * combinations with named classes
+ * combinations with named classes.
+ * 
+ * Exceptions that occur in identifying
+ * a route or whilst dispatching are
+ * handled by an IExceptionHandler object.
  */
 class Rest
 implements IDispatchable
@@ -31,6 +36,18 @@ implements IDispatchable
 	 * @var array
 	 */
 	private $routes = [];
+	
+	/**
+	 * Exception handler
+	 * 
+	 * An instance of IExceptionHandler which
+	 * is provided with any exception thrown
+	 * whilst identifying or dispatching
+	 * a controller or template
+	 * 
+	 * @var PO\Application\IExceptionHandler
+	 */
+	private $exceptionHandler;
 	
 	/**
 	 * An optional base to append
@@ -48,13 +65,20 @@ implements IDispatchable
 	 * Requires a config object which must
 	 * contain a list of routes in the format
 	 * 'METHOD /path => Class' and also accepts
-	 * an optional rewrite base to specify the
-	 * beginning of all matchable routes
+	 * an exception handler and an optional
+	 * rewrite base to specify the beginning
+	 * of all matchable routes
 	 * 
-	 * @param Config $routesConfig         A Config object listing all available routes
-	 * @param string $rewriteBase optional An optional base to use in matching routes
+	 * @param  Config            $routesConfig     A Config object listing all available routes
+	 * @param  IExceptionHandler $exceptionHandler An object to handle any exceptions encountered
+	 * @param  string            $rewriteBase      optional Optional base to use in route matching
+	 * @throws \InvalidArgumentException If any config route does not specify a valid HTTP verb
 	 */
-	public function __construct(Config $routesConfig, $rewriteBase = '')
+	public function __construct(
+		Config				$routesConfig,
+		IExceptionHandler	$exceptionHandler = null,
+		/* string */		$rewriteBase = ''
+	)
 	{
 		
 		// Loop through all the route keys in
@@ -90,6 +114,8 @@ implements IDispatchable
 			
 		}
 		
+		$this->exceptionHandler = $exceptionHandler;
+		
 		// Ensure the rewrite base does have a
 		// leading forward slash but does not
 		// a trailing one and save it
@@ -102,8 +128,6 @@ implements IDispatchable
 	}
 	
 	/**
-	 * Needs rewriting
-	 * 
 	 * Initiates the process of identifying and
 	 * running an instance of IEndpoint based
 	 * on the request path and method. If an
@@ -122,13 +146,17 @@ implements IDispatchable
 		// and catch any expected errors
 		try {
 			$route = $this->getRoute($ioCContainer, $route);
-		} catch (Rest\Exception $e) {
-			switch ($e->getCode()) {
+		} catch (Rest\Exception $exception) {
+			switch ($exception->getCode()) {
 				
 				// If the method / path combination
 				// does not match an identified route
 				// set the response to 404 (Not found)
 				case Rest\Exception::NO_ENDPOINT_IDENTIFIED_FROM_REQUEST_PATH_AND_METHOD:
+					if ($this->hasExceptionHandler()) {
+						$this->handleException($exception, $response, 404);
+						return;
+					}
 					$response->set404();
 				break;
 				
@@ -138,7 +166,11 @@ implements IDispatchable
 				// 500 (Internal server error)
 				case Rest\Exception::ENDPOINT_CLASS_DOES_NOT_EXIST:
 				case Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT:
-					$response->set500();
+					if ($this->hasExceptionHandler()) {
+						$this->handleException($exception, $response);
+						return;
+					}
+					throw $exception;
 				break;
 				
 			}
@@ -165,8 +197,12 @@ implements IDispatchable
 				]
 			);
 			ob_end_clean();
-		} catch (\Exception $e) {
-			$response->set500();
+		} catch (\Exception $exception) {
+			if ($this->hasExceptionHandler()) {
+				$this->handleException($exception, $response);
+				return;
+			}
+			throw $exception;
 		}
 		
 	}
@@ -255,7 +291,10 @@ implements IDispatchable
 			
 			// Ensure the class of the endpoint exists
 			if (!class_exists($route['class'])) {
-				throw new Rest\Exception(Rest\Exception::ENDPOINT_CLASS_DOES_NOT_EXIST);
+				throw new Rest\Exception(
+					Rest\Exception::ENDPOINT_CLASS_DOES_NOT_EXIST,
+					'Class: ' . $route['class']
+				);
 			}
 			
 			// Create an instance of the endpoint
@@ -264,7 +303,8 @@ implements IDispatchable
 			// Ensure it is an instance of IEndpoint
 			if (!$route instanceof IEndpoint) {
 				throw new Rest\Exception(
-					Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT
+					Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT,
+					'Class: ' . get_class($route)
 				);
 			}
 			
@@ -282,9 +322,20 @@ implements IDispatchable
 		// a matching path for the current
 		// request method/uri combination
 		throw new Rest\Exception(
-			Rest\Exception::NO_ENDPOINT_IDENTIFIED_FROM_REQUEST_PATH_AND_METHOD
+			Rest\Exception::NO_ENDPOINT_IDENTIFIED_FROM_REQUEST_PATH_AND_METHOD,
+			"Request signature: $requestMethod /" . implode('/', $requestPath)
 		);
 		
+	}
+	
+	private function hasExceptionHandler()
+	{
+		return isset($this->exceptionHandler);
+	}
+	
+	private function handleException(\Exception $exception, Response $response, $responseCode = 500)
+	{
+		$this->exceptionHandler->handleException($exception, $response, $responseCode);
 	}
 	
 }

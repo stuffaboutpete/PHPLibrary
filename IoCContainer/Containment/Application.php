@@ -82,11 +82,18 @@ implements IContainment
 			'PO\\Application\\Rest',
 			function($container, $pathToRoutesConfig, $pathToConfig = null){
 				
+				$response = new Response();
+				
 				return new \PO\Application(
 					new Rest(
-						new Config(file_get_contents($pathToRoutesConfig))
+						new Config(file_get_contents($pathToRoutesConfig)),
+						new ExceptionHandler\ErrorException(
+							new ExceptionHandler\JsonDebug(),
+							$response
+						)
 					),
-					new Response(),
+					$response,
+					$container,
 					[
 						new Bootstrap\Config($pathToConfig),
 						new Bootstrap\Pdo()

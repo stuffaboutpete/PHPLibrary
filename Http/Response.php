@@ -89,17 +89,14 @@ class Response
 		$this->initialise(403, $message, false);
 	}
 	
-	public function set404($message = null)
+	public function set404($representation = null)
 	{
-		$this->initialise(404, $message);
+		$this->initialise(404, $representation, is_array($representation));
 	}
 	
-	public function set500($message = 'Sorry, there was an unexpected error')
+	public function set500($representation = 'Sorry, there was an unexpected error')
 	{
-		if (!is_string($message)) {
-			throw new \InvalidArgumentException('Message must be a string');
-		}
-		$this->initialise(500, $message, false);
+		$this->initialise(500, $representation, is_array($representation));
 	}
 	
 	public function set501()

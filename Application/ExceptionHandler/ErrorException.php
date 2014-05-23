@@ -28,9 +28,10 @@ implements IExceptionHandler
 		$this->realExceptionHandler->handleException($exception, $response, $responseCode);
 	}
 	
-	public function handleError($errno, $errstr, $errfile, $errline, $previous)
+	public function handleError($code, $message, $file, $line, $context)
 	{
-		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+		if ($code === E_STRICT) return;
+		throw new \ErrorException($message, 0, $code, $file, $line);
 	}
 	
 	public function shutdown()
