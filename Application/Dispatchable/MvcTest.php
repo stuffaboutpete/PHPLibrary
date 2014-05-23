@@ -7,7 +7,7 @@ use PO\Application\Dispatchable\Mvc\RouteVariables;
 
 require_once 'vfsStream/vfsStream.php';
 require_once dirname(__FILE__) . '/../IDispatchable.php';
-require_once dirname(__FILE__) . '/../IErrorHandler.php';
+require_once dirname(__FILE__) . '/../IExceptionHandler.php';
 require_once dirname(__FILE__) . '/Mvc.php';
 require_once dirname(__FILE__) . '/Mvc/Controller.php';
 require_once dirname(__FILE__) . '/Mvc/IControllerIdentifier.php';
@@ -25,7 +25,7 @@ extends \PHPUnit_Framework_TestCase {
 	private $mResponse;
 	private $mIoCContainer;
 	private $mController;
-	private $mErrorHandler;
+	private $mExceptionHandler;
 	private $mException;
 	
 	public function setUp()
@@ -43,7 +43,7 @@ extends \PHPUnit_Framework_TestCase {
 			'\PO\Application\Dispatchable\Mvc\Controller',
 			['dispatch']
 		);
-		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
+		$this->mExceptionHandler = $this->getMock('\PO\Application\IExceptionHandler');
 		$this->mException = $this->getMock('\PO\Application\Dispatchable\MvcTestException');
 		$_SERVER['REQUEST_URI'] = '/';
 		parent::setUp();
@@ -56,7 +56,7 @@ extends \PHPUnit_Framework_TestCase {
 		unset($this->mResponse);
 		unset($this->mIoCContainer);
 		unset($this->mController);
-		unset($this->mErrorHandler);
+		unset($this->mExceptionHandler);
 		parent::tearDown();
 	}
 	
@@ -411,23 +411,13 @@ extends \PHPUnit_Framework_TestCase {
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testControllerAcceptsOptionalIErrorHandler()
+	public function testControllerAcceptsOptionalIExceptionHandler()
 	{
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$this->assertInstanceOf('\PO\Application\Dispatchable\Mvc', $dispatchable);
 	}
 	
-	public function testIErrorHandlerSetupMethodIsCalled()
-	{
-		$this->mErrorHandler
-			->expects($this->once())
-			->method('setup')
-			->with($this->equalTo($this->mResponse));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
-	}
-	
-	public function testExceptionThrownFromControllerIdentifierIsPassedToIErrorHandlerAfterSetup()
+	public function testExceptionThrownFromControllerIdentifierIsPassedToIExceptionHandler()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
@@ -435,18 +425,19 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function(){
 				throw new MvcTestException();
 			}));
-		$this->mErrorHandler
-			->expects($this->at(0))
-			->method('setup');
-		$this->mErrorHandler
-			->expects($this->at(1))
+		$this->mExceptionHandler
+			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionThrownFromControllerIsPassedToIErrorHandler()
+	public function testExceptionThrownFromControllerIsPassedToIExceptionHandler()
 	{
 		$this->mController
 			->expects($this->any())
@@ -467,15 +458,19 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function($controller, $method){
 				$controller->dispatch();
 			}));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\MvcTestException'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionThrownFromControllerTemplateIsPassedToIErrorHandler()
+	public function testExceptionThrownFromControllerTemplateIsPassedToIExceptionHandler()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
@@ -492,29 +487,37 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(
 				\vfsStream::url('POApplicationDispatchableMvcTest/ExceptionTemplate.phtml')
 			));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\Exception'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionIsPassedToIErrorHandlerIfIdentifiedClassDoesNotExist()
+	public function testExceptionIsPassedToIExceptionHandlerIfIdentifiedClassDoesNotExist()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
 			->method('getControllerClass')
 			->will($this->returnValue('\InvalidClass'));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionIsPassedToIErrorHandlerIfControllerIsNotInstanceOfController()
+	public function testExceptionIsPassedToIExceptionHandlerIfControllerIsNotInstanceOfController()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
@@ -525,15 +528,19 @@ extends \PHPUnit_Framework_TestCase {
 			->method('resolve')
 			->with('\PO\Application\Dispatchable\MvcTestException')
 			->will($this->returnValue(new \PO\Application\Dispatchable\MvcTestException()));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionIsPassedToIErrorHandlerIfControllerDoesNotHaveDispatchMethod()
+	public function testExceptionIsPassedToIExceptionHandlerIfControllerDoesNotHaveDispatchMethod()
 	{
 		$mController = $this->getMock(
 			'\PO\Application\Dispatchable\Mvc\Controller',
@@ -548,15 +555,19 @@ extends \PHPUnit_Framework_TestCase {
 			->method('resolve')
 			->with('\PO\Application\Dispatchable\MvcTestController')
 			->will($this->returnValue($mController));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionIsPassedToIErrorHandlerIfIdentifiedTemplateDoesNotExist()
+	public function testExceptionIsPassedToIExceptionHandlerIfIdentifiedTemplateDoesNotExist()
 	{
 		$this->mControllerIdentifier
 			->expects($this->once())
@@ -573,15 +584,19 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnValue(
 				\vfsStream::url('POApplicationDispatchableMvcTest/NonExistant.phtml')
 			));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
+				500
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionIsPassedToIErrorHandlerIfPathVariablesAreNotAssociativeArray()
+	public function testExceptionIsPassedToIExceptionHandlerIfPathVariablesAreNotAssociativeArray()
 	{
 		$mController = $this->getMock(
 			'\PO\Application\Dispatchable\Mvc\Controller',
@@ -600,44 +615,50 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->atLeastOnce())
 			->method('getTemplateVariables')
 			->will($this->returnValue(['one', 'two']));
-		$this->mErrorHandler
-			->expects($this->once())
-			->method('handleException')
-			->with($this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
-		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
-	}
-	
-	public function testExceptionIsPassedToErrorHandlerIfNoControllerOrTemplateIsFound()
-	{
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
 			->with(
 				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
-				404
+				$this->mResponse,
+				500
 			);
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testResponseIsSetTo500ifErrorHandlerDoesNotSetReponseWhilstHandlingException()
+	public function testExceptionIsPassedToExceptionHandlerIfNoControllerOrTemplateIsFound()
+	{
+		$this->mExceptionHandler
+			->expects($this->once())
+			->method('handleException')
+			->with(
+				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
+				404
+			);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
+		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testResponseIsStillSetIfExceptionHandlerDoesNotSetItWhilstHandlingException()
 	{
 		$this->mResponse
 			->expects($this->once())
 			->method('set404');
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
 			->with(
 				$this->isInstanceOf('\PO\Application\Dispatchable\Mvc\Exception'),
+				$this->mResponse,
 				404
 			);
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testExceptionThrownFromErrorHandlerStillResultsInResponseBeingSet()
+	public function testExceptionThrownFromExceptionHandlerStillResultsInResponseBeingSet()
 	{
 		$this->mResponse
 			->expects($this->once())
@@ -646,13 +667,13 @@ extends \PHPUnit_Framework_TestCase {
 			->expects($this->once())
 			->method('isInitialised')
 			->will($this->returnValue(true));
-		$this->mErrorHandler
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
 			->will($this->returnCallback(function(){
 				throw new \Exception();
 			}));
-		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mErrorHandler);
+		$dispatchable = new Mvc($this->mControllerIdentifier, $this->mExceptionHandler);
 		$dispatchable->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
@@ -661,22 +682,22 @@ extends \PHPUnit_Framework_TestCase {
 	 * stops us creating the following tests. Will have to come back to this...
 	 */
 	
-	public function testFatalErrorTriggeredInControllerIdentifierIsPassedToIErrorHandlerAfterSetup()
+	public function testFatalErrorTriggeredInControllerIdentifierIsPassedToIExceptionHandlerAfterSetup()
 	{
 		
 	}
 	
-	public function testFatalErrorTriggeredInControllerIsPassedToIErrorHandler()
+	public function testFatalErrorTriggeredInControllerIsPassedToIExceptionHandler()
 	{
 		
 	}
 	
-	public function testFatalErrorTriggeredInControllerTemplateIsPassedToIErrorHandler()
+	public function testFatalErrorTriggeredInControllerTemplateIsPassedToIExceptionHandler()
 	{
 		
 	}
 	
-	public function testResponseIsSetTo500ifErrorHandlerDoesNotSetReponseWhilstHandlingError()
+	public function testResponseIsSetTo500IfExceptionHandlerDoesNotSetReponseWhilstHandlingError()
 	{
 		;
 	}

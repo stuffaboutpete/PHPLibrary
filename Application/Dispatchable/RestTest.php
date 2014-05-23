@@ -19,6 +19,7 @@ class RestTest
 extends \PHPUnit_Framework_TestCase {
 	
 	private $mRoutesConfig;
+	private $mExceptionHandler;
 	private $mResponse;
 	private $mIoCContainer;
 	private $mEndpoint;
@@ -54,6 +55,7 @@ extends \PHPUnit_Framework_TestCase {
 			->will($this->returnCallback(function($key) use ($routes){
 				return $routes[$key];
 			}));
+		$this->mExceptionHandler = $this->getMock('\PO\Application\IExceptionHandler');
 		$this->mResponse = $this->getMock('\PO\Http\Response');
 		$this->mIoCContainer = $this->getMock('\PO\IoCContainer');
 		$this->mEndpoint = $this->getMock('\PO\Application\Dispatchable\Rest\IEndpoint');
@@ -70,13 +72,11 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		unset($this->mRoutesConfig);
 		unset($this->mResponse);
+		unset($this->mExceptionHandler);
 		unset($this->mIoCContainer);
 		unset($this->mEndpoint);
 		parent::tearDown();
 	}
-	
-	// @todo Debug mode
-	// @todo Logging errors
 	
 	public function testDispatchableCanBeInstantiated()
 	{
@@ -97,7 +97,8 @@ extends \PHPUnit_Framework_TestCase {
 		$mIoCContainer
 			->expects($this->once())
 			->method('resolve')
-			->with('PO\Application\Dispatchable\RestTestTest');
+			->with('PO\Application\Dispatchable\RestTestTest')
+			->will($this->returnValue(new RestTestIndex()));
 		$router = new Rest($this->mRoutesConfig);
 		$router->dispatch($this->mResponse, $mIoCContainer);
 	}
@@ -140,17 +141,35 @@ extends \PHPUnit_Framework_TestCase {
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testResponseIsSetTo500IfNoEndpointClassExists()
+	public function testExceptionIsThrownIfNoEndpointClassExists()
 	{
-		$this->mResponse
-			->expects($this->once())
-			->method('set500');
+		$this->setExpectedException(
+			'\PO\Application\Dispatchable\Rest\Exception',
+			'',
+			Rest\Exception::ENDPOINT_CLASS_DOES_NOT_EXIST
+		);
 		$router = new Rest($this->mRoutesConfig);
 		$_SERVER['REQUEST_URI'] = '/noclass';
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testResponseIsSetTo500IfEndpointClassIsNotIEndpoint()
+	public function testExceptionIsPassedToExceptionHandlerIfEndpointClassDoesNotExist()
+	{
+		$this->mExceptionHandler
+			->expects($this->once())
+			->method('handleException')
+			->with(
+				$this->callback(function($exception){
+					if (!($exception instanceof Rest\Exception)) return false;
+					return ($exception->getCode() == Rest\Exception::ENDPOINT_CLASS_DOES_NOT_EXIST);
+				})
+			);
+		$router = new Rest($this->mRoutesConfig, $this->mExceptionHandler);
+		$_SERVER['REQUEST_URI'] = '/noclass';
+		$router->dispatch($this->mResponse, $this->mIoCContainer);
+	}
+	
+	public function testExceptionIsThrownIfEndpointClassIsNotIEndpoint()
 	{
 		$mIoCContainer = $this->getMock('PO\IoCContainer');
 		$mIoCContainer
@@ -158,10 +177,35 @@ extends \PHPUnit_Framework_TestCase {
 			->method('resolve')
 			->with('stdClass')
 			->will($this->returnValue(new \stdClass()));
-		$this->mResponse
-			->expects($this->once())
-			->method('set500');
+		$this->setExpectedException(
+			'\PO\Application\Dispatchable\Rest\Exception',
+			'',
+			Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT
+		);
 		$router = new Rest($this->mRoutesConfig);
+		$_SERVER['REQUEST_URI'] = '/notiendpoint';
+		$router->dispatch($this->mResponse, $mIoCContainer);
+	}
+	
+	public function testExceptionIsPassedToExceptionHandlerIfEndpointClassIsNotIEndpoint()
+	{
+		$mIoCContainer = $this->getMock('PO\IoCContainer');
+		$mIoCContainer
+			->expects($this->once())
+			->method('resolve')
+			->with('stdClass')
+			->will($this->returnValue(new \stdClass()));
+		$this->mExceptionHandler
+			->expects($this->once())
+			->method('handleException')
+			->with(
+				$this->callback(function($exception){
+					if (!($exception instanceof Rest\Exception)) return false;
+					$errorCode = Rest\Exception::ENDPOINT_CLASS_DOES_NOT_IMPLEMENT_IENDPOINT;
+					return ($exception->getCode() == $errorCode);
+				})
+			);
+		$router = new Rest($this->mRoutesConfig, $this->mExceptionHandler);
 		$_SERVER['REQUEST_URI'] = '/notiendpoint';
 		$router->dispatch($this->mResponse, $mIoCContainer);
 	}
@@ -172,7 +216,8 @@ extends \PHPUnit_Framework_TestCase {
 		$mIoCContainer
 			->expects($this->once())
 			->method('resolve')
-			->with('PO\Application\Dispatchable\RestTestIndex');
+			->with('PO\Application\Dispatchable\RestTestIndex')
+			->will($this->returnValue(new RestTestIndex()));
 		$router = new Rest($this->mRoutesConfig);
 		$_SERVER['REQUEST_URI'] = '/';
 		$router->dispatch($this->mResponse, $mIoCContainer);
@@ -184,7 +229,8 @@ extends \PHPUnit_Framework_TestCase {
 		$mIoCContainer
 			->expects($this->once())
 			->method('resolve')
-			->with('PO\Application\Dispatchable\RestTestNestedPath');
+			->with('PO\Application\Dispatchable\RestTestNestedPath')
+			->will($this->returnValue(new RestTestIndex()));
 		$router = new Rest($this->mRoutesConfig);
 		$_SERVER['REQUEST_URI'] = '/nested/path';
 		$router->dispatch($this->mResponse, $mIoCContainer);
@@ -199,7 +245,7 @@ extends \PHPUnit_Framework_TestCase {
 				$this->mEndpoint,
 				'dispatch'
 			);
-		$router = new Rest($this->mRoutesConfig, 'rewritebase');
+		$router = new Rest($this->mRoutesConfig, null, 'rewritebase');
 		$_SERVER['REQUEST_URI'] = '/rewritebase/test';
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
@@ -209,7 +255,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mResponse
 			->expects($this->atLeastOnce())
 			->method('set404');
-		$router = new Rest($this->mRoutesConfig, 'rewritebase');
+		$router = new Rest($this->mRoutesConfig, null, 'rewritebase');
 		$_SERVER['REQUEST_URI'] = '/test';
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
@@ -223,7 +269,7 @@ extends \PHPUnit_Framework_TestCase {
 				$this->mEndpoint,
 				'dispatch'
 			);
-		$router = new Rest($this->mRoutesConfig, 'rewrite/base');
+		$router = new Rest($this->mRoutesConfig, null, 'rewrite/base');
 		$_SERVER['REQUEST_URI'] = '/rewrite/base/test';
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
@@ -237,7 +283,7 @@ extends \PHPUnit_Framework_TestCase {
 				$this->mEndpoint,
 				'dispatch'
 			);
-		$router = new Rest($this->mRoutesConfig, '/rewritebase/');
+		$router = new Rest($this->mRoutesConfig, null, '/rewritebase/');
 		$_SERVER['REQUEST_URI'] = '/rewritebase/test';
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
@@ -333,17 +379,22 @@ extends \PHPUnit_Framework_TestCase {
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	
-	public function testResponseIsSetTo500IfEndpointThrowsException()
+	public function testExceptionThrowFromEndpointIsPassedToExceptionHandlerIfAvailable()
 	{
+		$exception = new \Exception();
 		$this->mIoCContainer
 			->expects($this->once())
 			->method('call')
-			->will($this->throwException(new \Exception()));
-		$this->mResponse
+			->will($this->throwException($exception));
+		$this->mExceptionHandler
 			->expects($this->once())
-			->method('set500');
+			->method('handleException')
+			->with(
+				$exception,
+				$this->mResponse
+			);
 		$_SERVER['REQUEST_URI'] = '/test';
-		$router = new Rest($this->mRoutesConfig);
+		$router = new Rest($this->mRoutesConfig, $this->mExceptionHandler);
 		$router->dispatch($this->mResponse, $this->mIoCContainer);
 	}
 	

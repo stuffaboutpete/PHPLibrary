@@ -1,33 +1,42 @@
 <?php
 
-namespace PO\View;
+namespace PO\Application\ExceptionHandler;
 
-class Debug
-extends \PO\View
+use PO\Application\IExceptionHandler;
+use PO\Http\Response;
+
+class JsonDebug
+implements IExceptionHandler
 {
 	
-	public function __construct(\Exception $exception, $responseCode)
+	public function __construct()
+	{
+		ini_set('display_errors', false);
+	}
+	
+	public function handleException(\Exception $exception, Response $response, $responseCode = 500)
 	{
 		
-		$this->addTemplateVariable('responseCode', $responseCode);
-		$this->addTemplateVariable('message', htmlentities($exception->getMessage()));
-		if (method_exists($exception, 'getSubMessage')) {
-			$this->addTemplateVariable('subMessage', htmlentities($exception->getSubMessage()));
-		}
-		$this->addTemplateVariable('type', get_class($exception));
-		$this->addTemplateVariable('code', $exception->getCode());
-		$this->addTemplateVariable('class', $exception->getTrace()[0]['class']);
-		$this->addTemplateVariable('fileName', $exception->getFile());
-		$this->addTemplateVariable('lineNumber', $exception->getLine());
-		if (!($exception instanceof \ErrorException && count($exception->getTrace()) == 1)) {
-			$this->addTemplateVariable(
-				'stackTrace',
-				$this->formatStackTrace($exception->getTrace())
-			);
-		}
-		$this->addTemplateVariable('isError', $exception instanceof \ErrorException);
+		$message = $exception->getMessage();
+		if (method_exists($exception, 'getSubMessage')) $message .= $exception->getSubMessage();
 		
-		parent::__construct();
+		$output = [
+			'error'		=> true,
+			'message'	=> $message,
+			'exception'	=> [
+				'type'				=> get_class($exception),
+				'code'				=> $exception->getCode(),
+				'thrown_from_file'	=> $exception->getFile(),
+				'thrown_from_line'	=> $exception->getLine()
+			]
+		];
+		
+		if (!($exception instanceof \ErrorException && count($exception->getTrace()) == 1)) {
+			$output['exception']['trace'] = $this->formatStackTrace($exception->getTrace());
+		}
+		
+		$method = 'set' . $responseCode;
+		$response->$method($output);
 		
 	}
 	
@@ -43,7 +52,7 @@ extends \PO\View
 					if (method_exists($reflectionArguments[$i], 'getName')
 					&&	$reflectionArguments[$i]->getName() != '...') {
 						array_push($arguments, [
-							'name'		=> $reflectionArguments[$i]->getName(),
+							'name'		=> '$' . $reflectionArguments[$i]->getName(),
 							'optional'	=> $reflectionArguments[$i]->isOptional(),
 							'type'		=> $this->getArgumentTypeString($call['args'][$i])
 						]);
@@ -55,13 +64,11 @@ extends \PO\View
 						]);
 					}
 				}
-				$fileParts = explode('/', $call['file']);
 				array_push($simpleStackTrace, [
-					'fileName'		=> array_pop($fileParts),
-					'filePath'		=> $call['file'],
-					'lineNumber'	=> $call['line'],
-					'call'			=> "\\{$call['function']}()",
-					'arguments'		=> $arguments
+					'file'		=> $call['file'],
+					'line'		=> $call['line'],
+					'call'		=> "\\{$call['function']}()",
+					'arguments'	=> $arguments
 				]);
 			} else {
 				if (method_exists($call['class'], $call['function'])) {
@@ -73,25 +80,21 @@ extends \PO\View
 				$arguments = [];
 				for ($i = 0; $i < count($call['args']); $i++) {
 					array_push($arguments, [
-						'name'		=> $reflectionArguments[$i]->getName(),
+						'name'		=> '$' . $reflectionArguments[$i]->getName(),
 						'optional'	=> $reflectionArguments[$i]->isOptional(),
 						'type'		=> $this->getArgumentTypeString($call['args'][$i])
 					]);
 				}
 				if (isset($call['file'])) {
-					$fileParts = explode('/', $call['file']);
-					$fileName = array_pop($fileParts);
-					$filePath = $call['file'];
+					$file = $call['file'];
 				} else {
-					$fileName = '\\' . $stackTrace[$index + 1]['function'];
-					$filePath = null;
+					$file = '\\' . $stackTrace[$index + 1]['function'];
 				}
 				array_push($simpleStackTrace, [
-					'fileName'		=> $fileName,
-					'filePath'		=> $filePath,
-					'lineNumber'	=> isset($call['line']) ? $call['line'] : null,
-					'call'			=> "{$call['class']}{$call['type']}{$call['function']}()",
-					'arguments'		=> $arguments
+					'file'		=> $file,
+					'line'		=> isset($call['line']) ? $call['line'] : null,
+					'call'		=> "{$call['class']}{$call['type']}{$call['function']}()",
+					'arguments'	=> $arguments
 				]);
 			}
 		}

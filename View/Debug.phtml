@@ -107,7 +107,7 @@
 </head>
 <body>
 	
-	<h1>An unhandled <?= $errorType; ?> occurred</h1>
+	<h1>An unhandled <?= ($isError) ? 'error' : 'exception'; ?> occurred</h1>
 	
 	<h4 id="responseCode">Response Code: <?= $responseCode; ?></h4>
 	
@@ -116,10 +116,10 @@
 		<?php if (isset($subMessage)) : ?><h3>(<?= $subMessage; ?>)</h3><?php endif; ?>
 	</div>
 	
-	<h4><?= ucfirst($errorType); ?> details:</h4>
+	<h4>Exception details:</h4>
 	
 	<dl>
-		<dt><?= ($errorType == 'exception') ? 'Class' : 'Type'; ?></dt>
+		<dt>Class</dt>
 		<dd><?= $type; ?></dd>
 		<br>
 		<dt>Code</dt>
@@ -129,11 +129,9 @@
 	<h4>Thrown from:</h4>
 	
 	<dl>
-		<?php if (isset($class)) : ?>
-			<dt>Class</dt>
-			<dd><?= $class; ?></dd>
-			<br>
-		<?php endif; ?>
+		<dt>Class</dt>
+		<dd><?= $class; ?></dd>
+		<br>
 		<dt>File name</dt>
 		<dd><?= $fileName; ?></dd>
 		<br>
@@ -176,19 +174,19 @@
 		
 	<?php endif; ?>
 	
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
+	<script src="/jquery.js" ></script>
 	<script>
 		
-		$('.hasDetails').hover(function(){
-			var $stackTrace = $('#stackTrace');
-			var $details = $(this).next('.details');
+		jQuery('.hasDetails').hover(function(){
+			var $stackTrace = jQuery('#stackTrace');
+			var $details = jQuery(this).next('.details');
 			$details.show().css({
 				width: $stackTrace.width() - 8,
 				left: $stackTrace.offset().left + 4,
-				top: $(this).offset().top - $details.height() - 16
+				top: jQuery(this).offset().top - $details.height() - 16
 			});
 		}, function(){
-			$(this).next('.details').hide();
+			jQuery(this).next('.details').hide();
 		});
 		
 	</script>

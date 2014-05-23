@@ -2,13 +2,14 @@
 
 namespace PO\IoCContainer\Containment;
 
-use PO\IoCContainer;
-use PO\IoCContainer\IContainment;
+use PO\Application\Bootstrap;
 use PO\Application\Dispatchable\Mvc;
 use PO\Application\Dispatchable\Rest;
-use PO\Application\Bootstrap;
-use PO\Http\Response;
+use PO\Application\ExceptionHandler;
 use PO\Config;
+use PO\Http\Response;
+use PO\IoCContainer;
+use PO\IoCContainer\IContainment;
 
 class Application
 implements IContainment
@@ -40,18 +41,27 @@ implements IContainment
 				$customErrorView = null
 			){
 				
+				$response = new Response();
+				
+				$exceptionHandler = isset($customErrorView)
+					? new ExceptionHandler\View\Hybrid($customErrorView)
+					: new ExceptionHandler\View();
+				
+				$exceptionHandler = new ExceptionHandler\ErrorException(
+					$exceptionHandler,
+					$response
+				);
+				
 				return new \PO\Application(
 					new Mvc(
 						new Mvc\ControllerIdentifier\FolderStructure(
 							$controllersNamespace,
 							$templatesDirectory
 						),
-						$container,
-						(isset($customErrorView))
-							? new \PO\Application\ErrorHandler\View\Hybrid($customErrorView)
-							: new \PO\Application\ErrorHandler\View()
+						$exceptionHandler
 					),
-					new Response(),
+					$response,
+					$container,
 					array_merge([
 						new Bootstrap\Config($pathToConfig, $environments),
 						new Bootstrap\Pdo(),
@@ -72,11 +82,18 @@ implements IContainment
 			'PO\\Application\\Rest',
 			function($container, $pathToRoutesConfig, $pathToConfig = null){
 				
+				$response = new Response();
+				
 				return new \PO\Application(
 					new Rest(
-						new Config(file_get_contents($pathToRoutesConfig))
+						new Config(file_get_contents($pathToRoutesConfig)),
+						new ExceptionHandler\ErrorException(
+							new ExceptionHandler\JsonDebug(),
+							$response
+						)
 					),
-					new Response(),
+					$response,
+					$container,
 					[
 						new Bootstrap\Config($pathToConfig),
 						new Bootstrap\Pdo()
