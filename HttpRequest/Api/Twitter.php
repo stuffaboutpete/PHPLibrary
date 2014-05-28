@@ -2,22 +2,27 @@
 
 namespace PO\HttpRequest\Api;
 
+use PO\HttpRequest\ITransferMethod;
+use PO\HttpRequest\Response;
+
 class Twitter
 extends \PO\HttpRequest
 {
 	
-	private $application;
-	private $authMechanism;
+	private $consumerKey;
+	private $consumerSecret;
+	private $accessToken;
+	private $accessTokenSecret;
 	
 	public function __construct(
-		/* Type checked by parent */	$transferMethod,
-		/* Type checked by parent */	$response,
-		Twitter\IApplication			$application,
-		Twitter\IAuthMechanism			$authMechanism
+		/* string */	$consumerKey,
+		/* string */	$consumerSecret,
+		/* string */	$accessToken,
+		/* string */	$accessTokenSecret,
+		ITransferMethod	$transferMethod,
+		Response		$response
 	)
 	{
-		
-		$this->authMechanism = $authMechanism;
 		
 		parent::__construct(
 			$transferMethod,
@@ -27,8 +32,10 @@ extends \PO\HttpRequest
 			'form-urlencoded'
 		);
 		
-		$this->application = $application;
-		$this->authMechanism = $authMechanism;
+		$this->consumerKey = $consumerKey;
+		$this->consumerSecret = $consumerSecret;
+		$this->accessToken = $accessToken;
+		$this->accessTokenSecret = $accessTokenSecret;
 		
 	}
 	
@@ -146,8 +153,8 @@ extends \PO\HttpRequest
 		$signatureMethod	= 'HMAC-SHA1';
 		$timestamp			= time();
 		$nonce				= $this->getNonce();
-		$consumerKey		= $this->application->getConsumerKey();
-		$token				= $this->authMechanism->getAccessToken();
+		$consumerKey		= $this->consumerKey;
+		$token				= $this->accessToken;
 		$signature			= $this->getSignature(
 			$verb,
 			$this->getCompletePath($path),
@@ -222,8 +229,8 @@ extends \PO\HttpRequest
 			'&' .
 			rawurlencode($parameterString);
 		
-		$signingKey = rawurlencode($this->application->getConsumerSecret()) .
-			'&' . rawurlencode($this->authMechanism->getAccessTokenSecret());
+		$signingKey = rawurlencode($this->consumerSecret) .
+			'&' . rawurlencode($this->accessTokenSecret);
 		
 		return base64_encode(hash_hmac('sha1', $baseString, $signingKey, true));
 		
