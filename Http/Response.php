@@ -23,6 +23,7 @@ class Response
 		$headers = array(
 			'200' => 'HTTP/1.1 200 OK',
 			'201' => 'HTTP/1.1 201 Created',
+			'204' => 'HTTP/1.1 204 No Content',
 			'302' => 'HTTP/1.1 302 Found',
 			'304' => 'HTTP/1.1 304 Not Modified',
 			'400' => 'HTTP/1.1 400 Bad Request',
@@ -51,6 +52,11 @@ class Response
 	public function set201($representation)
 	{
 		$this->initialise(201, $representation, is_array($representation));
+	}
+	
+	public function set204()
+	{
+		$this->initialise(204);
 	}
 	
 	public function set302($location)

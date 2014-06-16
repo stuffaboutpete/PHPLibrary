@@ -271,9 +271,18 @@ class Gateway
 		
 	}
 	
-	public function save($object)
+	public function save($object, array $nestedSaves = null)
 	{
 		$this->saveOrDelete($object, 'save');
+		// @todo Validate nestedSaves format
+		if (is_array($nestedSaves)) {
+			foreach ($nestedSaves as $nestMethod) {
+				// @todo Validate method exists
+				$nestedData = $object->$nestMethod();
+				if (!is_array($nestedData)) $nestedData = [$nestedData];
+				foreach ($nestedData as $data) $this->save($data);
+			}
+		}
 	}
 	
 	public function delete($object)
@@ -478,6 +487,17 @@ class Gateway
 	private function getKeyValuesFromData($className, $data)
 	{
 		return array_intersect_key($data, array_flip($this->getTypeKeys($className)));
+	}
+	
+	// @todo Untested method
+	public function getFactory($className)
+	{
+		return $this->getType($className)['factory'];
+	}
+	
+	public function typeIsRegistered($className)
+	{
+		return (null !== $this->getType($className));
 	}
 	
 }

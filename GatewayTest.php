@@ -1112,6 +1112,176 @@ extends \PHPUnit_Framework_TestCase {
 		$gateway->save($object);
 	}
 	
+	public function testNestedObjectFromMethodCallCanBeSaved()
+	{
+		$object = $this->getMock('\stdClass', ['getSubObject']);
+		$subObject = new \stdClass();
+		$object->id = 1;
+		$subObject->id = 2;
+		$object
+			->expects($this->once())
+			->method('getSubObject')
+			->will($this->returnValue($subObject));
+		$this->mQueryProvider
+			->expects($this->once())
+			->method('getSavePreparedStatement')
+			->will($this->returnValue('INSERT ... ON DUPLICATE KEY UPDATE ... :id'));
+		$this->mFactory
+			->expects($this->once())
+			->method('dismantle')
+			->with($this->equalTo($object))
+			->will($this->returnValue(['id' => 1]));
+		$mQueryProvider = $this->getMock('PO\Gateway\IQueryProvider');
+		$mQueryProvider
+			->expects($this->once())
+			->method('approveClass')
+			->will($this->returnValue(true));
+		$mQueryProvider
+			->expects($this->once())
+			->method('getSavePreparedStatement')
+			->will($this->returnValue('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2'));
+		$mFactory = $this->getMock('PO\Gateway\IFactory');
+		$mFactory
+			->expects($this->once())
+			->method('approveClass')
+			->will($this->returnValue(true));
+		$mFactory
+			->expects($this->once())
+			->method('dismantle')
+			->with($this->equalTo($subObject))
+			->will($this->returnValue(['id' => 2]));
+		$this->mPdo
+			->expects($this->at(1))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(0))
+			->method('execute')
+			->with(['id' => 1]);
+		$this->mPdo
+			->expects($this->at(2))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(1))
+			->method('execute')
+			->with(['id' => 2]);
+		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
+		$gateway->addType(get_class($object), $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\stdClass', $mFactory, $mQueryProvider);
+		$gateway->save(
+			$object,
+			['getSubObject']
+		);
+	}
+	
+	public function testArrayOfNestedObjectsFromMethodCallCanBeSaved()
+	{
+		$object = $this->getMock('\stdClass', ['getSubObjects']);
+		$object->id = 1;
+		$subObject1 = new \stdClass();
+		$subObject1->id = 1;
+		$subObject2 = new \stdClass();
+		$subObject2->id = 2;
+		$subObject3 = new \stdClass();
+		$subObject3->id = 3;
+		$object
+			->expects($this->once())
+			->method('getSubObjects')
+			->will($this->returnValue([$subObject1, $subObject2, $subObject3]));
+		$this->mQueryProvider
+			->expects($this->once())
+			->method('getSavePreparedStatement')
+			->will($this->returnValue('INSERT ... ON DUPLICATE KEY UPDATE ... :id'));
+		$this->mFactory
+			->expects($this->once())
+			->method('dismantle')
+			->with($this->equalTo($object))
+			->will($this->returnValue(['id' => 1]));
+		$mQueryProvider = $this->getMock('PO\Gateway\IQueryProvider');
+		$mQueryProvider
+			->expects($this->once())
+			->method('approveClass')
+			->will($this->returnValue(true));
+		$mQueryProvider
+			->expects($this->exactly(3))
+			->method('getSavePreparedStatement')
+			->will($this->returnValue('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2'));
+		$mFactory = $this->getMock('PO\Gateway\IFactory');
+		$mFactory
+			->expects($this->once())
+			->method('approveClass')
+			->will($this->returnValue(true));
+		$mFactory
+			->expects($this->at(1))
+			->method('dismantle')
+			->with($this->equalTo($subObject1))
+			->will($this->returnValue(['id' => 1]));
+		$mFactory
+			->expects($this->at(2))
+			->method('dismantle')
+			->with($this->equalTo($subObject2))
+			->will($this->returnValue(['id' => 2]));
+		$mFactory
+			->expects($this->at(3))
+			->method('dismantle')
+			->with($this->equalTo($subObject3))
+			->will($this->returnValue(['id' => 3]));
+		$this->mPdo
+			->expects($this->at(1))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(0))
+			->method('execute')
+			->with(['id' => 1]);
+		$this->mPdo
+			->expects($this->at(2))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(1))
+			->method('execute')
+			->with(['id' => 1]);
+		$this->mPdo
+			->expects($this->at(3))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(2))
+			->method('execute')
+			->with(['id' => 2]);
+		$this->mPdo
+			->expects($this->at(4))
+			->method('prepare')
+			->with('INSERT ... ON DUPLICATE KEY UPDATE ... :id 2')
+			->will($this->returnValue($this->mPdoStatement));
+		$this->mPdoStatement
+			->expects($this->at(3))
+			->method('execute')
+			->with(['id' => 3]);
+		$gateway = new Gateway($this->mPdo, $this->mCollectionFactory);
+		$gateway->addType(get_class($object), $this->mFactory, $this->mQueryProvider);
+		$gateway->addType('\stdClass', $mFactory, $mQueryProvider);
+		$gateway->save(
+			$object,
+			['getSubObjects']
+		);
+	}
+	
+	// @todo Test multiple sub save-methods can be called
+	// @todo Test sub maps can be used eg...
+	// [
+	//   'getSubObjects' => [
+	//     'getSubSubObjects'
+	//   ]
+	// ]
+	
 	public function testObjectCanBeDeletedAndDeleteQueryWillBeSentToPdo()
 	{
 		$object = new GatewayTestObject();
