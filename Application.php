@@ -4,7 +4,7 @@ namespace PO;
 
 use PO\Application\IDispatchable;
 use PO\Application\IBootstrap;
-use PO\Application\IErrorHandler;
+use PO\Application\IExceptionHandler;
 use PO\Http\Response;
 
 /**
@@ -82,9 +82,9 @@ class Application
 	 * application to handle by way
 	 * of display/log/email/etc
 	 * 
-	 * @var PO\Application\IErrorHandler
+	 * @var PO\Application\IExceptionHandler
 	 */
-	private $errorHandler;
+	private $exceptionHandler;
 	
 	/**
 	 * Constructor
@@ -92,20 +92,20 @@ class Application
 	 * Inject a dispatchable object, a response
 	 * object and any number of bootstrap objects
 	 * 
-	 * @param  PO\Application\IDispatchable $dispatchable An object which will be dispatched
-	 * @param  PO\Http\Response             $response     Will be set during dispatch
-	 * @param  PO\IoCContainer              @ioCContainer Provided to bootstraps and dispatchable
-	 * @param  array                        $bootstraps   Bootstraps to be processed before dispatch
-	 * @param  PO\Application\IErrorHandler @errorHandler Accepts any error encountered
+	 * @param  PO\Application\IDispatchable     $dispatchable An object which will be dispatched
+	 * @param  PO\Http\Response                 $response     Will be set during dispatch
+	 * @param  PO\IoCContainer                  @ioCContainer Given to bootstraps and dispatchable
+	 * @param  array                            $bootstraps   Bootstraps to be run before dispatch
+	 * @param  PO\Application\IExceptionHandler @exceptionHandler Accepts any error encountered
 	 * @return PO\Application self
 	 * @throws InvalidArgumentException if non IBootstrap provided
 	 */
 	public function __construct(
-		IDispatchable	$dispatchable,
-		Response		$response,
-		IoCContainer	$ioCContainer,
-		array			$bootstraps = [],
-		IErrorHandler	$errorHandler = null
+		IDispatchable		$dispatchable,
+		Response			$response,
+		IoCContainer		$ioCContainer,
+		array				$bootstraps = [],
+		IExceptionHandler	$exceptionHandler = null
 	)
 	{
 		
@@ -125,7 +125,7 @@ class Application
 		$this->response = $response;
 		$this->ioCContainer = $ioCContainer;
 		$this->bootstraps = $bootstraps;
-		$this->errorHandler = $errorHandler;
+		$this->exceptionHandler = $exceptionHandler;
 		
 	}
 	
@@ -138,13 +138,6 @@ class Application
 	 */
 	public function run()
 	{
-		
-		// Pass the response object to
-		// the error handler if it is set.
-		// This is so that it can process
-		// the response in the event of a
-		// PHP error.
-		if (isset($this->errorHandler)) $this->errorHandler->setup($this->response);
 		
 		try {
 			
@@ -162,12 +155,11 @@ class Application
 			// If we have an uncaught exception
 			// in running the application, pass
 			// it to the error handler if set
-			if (isset($this->errorHandler)) $this->errorHandler->handleException($exception, 500);
-			
-			// @todo I'm not sure the next two
-			// commands make sense; surely they
-			// only make sense if there is no
-			// error handler?
+			if (isset($this->exceptionHandler)) {
+				$this->exceptionHandler->handleException($exception, $this->response);
+				$this->response->process();
+				return;
+			}
 			
 			// Ensure the response is 500
 			// (Internal Server Error)

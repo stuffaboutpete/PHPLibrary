@@ -67,7 +67,8 @@ implements IContainment
 						new Bootstrap\Pdo(),
 						new Bootstrap\Authenticator(new \PO\Helper\Cookie()),
 						new Bootstrap\AccessController($accessControllerRules)
-					], $bootstraps)
+					], $bootstraps),
+					$exceptionHandler
 				);
 				
 			}
@@ -80,24 +81,33 @@ implements IContainment
 		
 		$this->container->registerCallback(
 			'PO\\Application\\Rest',
-			function($container, $pathToRoutesConfig, $pathToConfig = null){
+			function($container, $pathToRoutesConfig, $pathToConfig = null, $pathToModels = null){
 				
 				$response = new Response();
+				$exceptionHandler = new ExceptionHandler\ErrorException(
+					new ExceptionHandler\JsonDebug(),
+					$response
+				);
 				
 				return new \PO\Application(
 					new Rest(
 						new Config(file_get_contents($pathToRoutesConfig)),
-						new ExceptionHandler\ErrorException(
-							new ExceptionHandler\JsonDebug(),
-							$response
-						)
+						$exceptionHandler
 					),
 					$response,
 					$container,
 					[
 						new Bootstrap\Config($pathToConfig),
-						new Bootstrap\Pdo()
-					]
+						new Bootstrap\Pdo(),
+						$container->resolve(
+							Bootstrap\MagicGateway::Class,
+							[
+								null,
+								$pathToModels
+							]
+						)
+					],
+					$exceptionHandler
 				);
 				
 			}

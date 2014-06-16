@@ -5,7 +5,7 @@ namespace PO;
 require_once dirname(__FILE__) . '/Application.php';
 require_once dirname(__FILE__) . '/Application/IDispatchable.php';
 require_once dirname(__FILE__) . '/Application/IBootstrap.php';
-require_once dirname(__FILE__) . '/Application/IErrorHandler.php';
+require_once dirname(__FILE__) . '/Application/IExceptionHandler.php';
 require_once dirname(__FILE__) . '/Http/Response.php';
 
 class ApplicationTest
@@ -24,7 +24,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->mIoCContainer = $this->getMock('\PO\IoCContainer');
 		$this->mBootstrap = $this->getMock('\PO\Application\IBootstrap');
 		$this->mBootstrap2 = $this->getMock('\PO\Application\IBootstrap');
-		$this->mErrorHandler = $this->getMock('\PO\Application\IErrorHandler');
+		$this->mExceptionHandler = $this->getMock('\PO\Application\IExceptionHandler');
 		parent::setUp();
 	}
 	
@@ -35,7 +35,7 @@ extends \PHPUnit_Framework_TestCase {
 		unset($this->mIoCContainer);
 		unset($this->mBootstrap);
 		unset($this->mBootstrap2);
-		unset($this->mErrorHandler);
+		unset($this->mExceptionHandler);
 		parent::tearDown();
 	}
 	
@@ -300,85 +300,86 @@ extends \PHPUnit_Framework_TestCase {
 		$application->run();
 	}
 	
-	public function testApplicationAcceptsOptionalIErrorHandler()
+	public function testApplicationAcceptsOptionalIExceptionHandler()
 	{
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
 			$this->mIoCContainer,
 			[],
-			$this->mErrorHandler
+			$this->mExceptionHandler
 		);
 		$this->assertInstanceOf('\PO\Application', $application);
 	}
 	
-	public function testIErrorHandlerSetupMethodIsCalled()
+	public function testExceptionThrownFromBootstrapRunMethodIsPassedToExceptionHandler()
 	{
-		$application = new Application(
-			$this->mDispatchable,
-			$this->mResponse,
-			$this->mIoCContainer,
-			[],
-			$this->mErrorHandler
-		);
-		$this->mErrorHandler
+		$exception = new \Exception('Something went wrong');
+		$this->mBootstrap
 			->expects($this->once())
-			->method('setup')
-			->with($this->mResponse);
-		$this->mResponse
-			->expects($this->any())
-			->method('isInitialised')
-			->will($this->returnValue(true));
-		$application->run();
-	}
-	
-	public function testDispatchExceptionIsPassedToIErrorHandler()
-	{
-		$this->setExpectedException('\PO\TestException');
-		$this->mDispatchable
-			->expects($this->any())
-			->method('dispatch')
-			->will($this->returnCallback(function(){
-				throw new \PO\TestException();
-			}));
-		$application = new Application(
-			$this->mDispatchable,
-			$this->mResponse,
-			$this->mIoCContainer,
-			[],
-			$this->mErrorHandler
-		);
-		$this->mErrorHandler
+			->method('run')
+			->will($this->throwException($exception));
+		$this->mExceptionHandler
 			->expects($this->once())
 			->method('handleException')
-			->with($this->isInstanceOf('\PO\TestException'));
-		$application->run();
-	}
-	
-	public function testBootstrapExceptionIsPassedToIErrorHandler()
-	{
-		$this->setExpectedException('\PO\TestException');
-		$this->mBootstrap
-			->expects($this->any())
-			->method('run')
-			->will($this->returnCallback(function(){
-				throw new \PO\TestException();
-			}));
+			->with($exception);
 		$application = new Application(
 			$this->mDispatchable,
 			$this->mResponse,
 			$this->mIoCContainer,
 			[$this->mBootstrap],
-			$this->mErrorHandler
+			$this->mExceptionHandler
 		);
-		$this->mErrorHandler
-			->expects($this->once())
-			->method('handleException')
-			->with($this->isInstanceOf('\PO\TestException'));
 		$application->run();
 	}
 	
-	// @todo Can we catch non exceptions? Syntax errors and the like
+	public function testResponseIsPassedToExceptionHandler()
+	{
+		$exception = new \Exception('Something went wrong');
+		$this->mBootstrap
+			->expects($this->once())
+			->method('run')
+			->will($this->throwException($exception));
+		$this->mExceptionHandler
+			->expects($this->once())
+			->method('handleException')
+			->with(
+				$exception,
+				$this->mResponse
+			);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer,
+			[$this->mBootstrap],
+			$this->mExceptionHandler
+		);
+		$application->run();
+	}
+	
+	public function testExceptionThrownFromDispatchableRunMethodIsPassedToExceptionHandler()
+	{
+		$exception = new \Exception('Something went wrong');
+		$this->mDispatchable
+			->expects($this->once())
+			->method('dispatch')
+			->will($this->throwException($exception));
+		$this->mExceptionHandler
+			->expects($this->once())
+			->method('handleException')
+			->with(
+				$exception,
+				$this->mResponse
+			);
+		$application = new Application(
+			$this->mDispatchable,
+			$this->mResponse,
+			$this->mIoCContainer,
+			[],
+			$this->mExceptionHandler
+		);
+		$application->run();
+	}
 	
 }
 
