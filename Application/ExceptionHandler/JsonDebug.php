@@ -49,7 +49,8 @@ implements IExceptionHandler
 				$reflectionArguments = $reflectionFunction->getParameters();
 				$arguments = [];
 				for ($i = 0; $i < count($call['args']); $i++) {
-					if (method_exists($reflectionArguments[$i], 'getName')
+					if (isset($reflectionArguments[$i])
+					&&	method_exists($reflectionArguments[$i], 'getName')
 					&&	$reflectionArguments[$i]->getName() != '...') {
 						array_push($arguments, [
 							'name'		=> '$' . $reflectionArguments[$i]->getName(),
@@ -79,9 +80,15 @@ implements IExceptionHandler
 				$reflectionArguments = $reflectionMethod->getParameters();
 				$arguments = [];
 				for ($i = 0; $i < count($call['args']); $i++) {
+					$name = (isset($reflectionArguments[$i]))
+						? '$' . $reflectionArguments[$i]->getName()
+						: '(unnamed)';
+					$isOptional = (isset($reflectionArguments[$i]))
+						? $reflectionArguments[$i]->isOptional()
+						: false;
 					array_push($arguments, [
-						'name'		=> '$' . $reflectionArguments[$i]->getName(),
-						'optional'	=> $reflectionArguments[$i]->isOptional(),
+						'name'		=> $name,
+						'optional'	=> $isOptional,
 						'type'		=> $this->getArgumentTypeString($call['args'][$i])
 					]);
 				}
