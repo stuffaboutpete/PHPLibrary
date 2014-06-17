@@ -149,7 +149,7 @@ class Model
 	 * 
 	 * @return array The names of all the model properties
 	 */
-	public function propertyNames()
+	public function getPropertyNames()
 	{
 		return array_keys($this->properties);
 	}
