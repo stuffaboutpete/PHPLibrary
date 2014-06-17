@@ -1,6 +1,6 @@
 <phpunit colors="true">
 	<testsuites>
-		<testsuite name="sR">
+		<testsuite name="All">
 			<directory>.</directory>
 		</testsuite>
 	</testsuites>
