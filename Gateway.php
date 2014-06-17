@@ -113,8 +113,8 @@ class Gateway
 		
 		$query = $type['queries'][$key];
 		
-		preg_match_all('/(?::([A-Za-z0-9_]*))/', $query['query'], $preparedKeys);
-		$preparedKeys = $preparedKeys[1];
+		preg_match_all('/(?::([A-Za-z0-9_][A-Za-z0-9_]*))/', $query['query'], $preparedKeys);
+		$preparedKeys = array_unique($preparedKeys[1]);
 		
 		if (count($preparedKeys) == 0) {
 			
