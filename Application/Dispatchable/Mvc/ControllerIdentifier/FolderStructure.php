@@ -128,6 +128,8 @@ implements IControllerIdentifier
 			return null;
 		}
 		
+		if ($target == '\\' && !$existenceFunction($indexTarget)) return null;
+		
 		$target = ($target != '\\' && $existenceFunction($target)) ? $target : $indexTarget;
 		$pathVariables = $pathVariables[($existenceFunction($target)) ? 0 : 1];
 		

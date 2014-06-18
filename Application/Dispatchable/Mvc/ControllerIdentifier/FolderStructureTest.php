@@ -86,6 +86,9 @@ extends \PHPUnit_Framework_TestCase {
 					'Nested' => array(
 						'Index.phtml' => ''
 					)
+				),
+				'JustTemplate' => array(
+					'Index.phtml' => ''
 				)
 			)
 		);
@@ -344,6 +347,29 @@ extends \PHPUnit_Framework_TestCase {
 			),
 			$identifier->getTemplatePath()
 		);
+	}
+	
+	public function testIndexTemplateIsReturnedIfIndexControllerDoesNotExist()
+	{
+		$identifier = new FolderStructure(
+			null,
+			\vfsStream::url(
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest/JustTemplate'
+			)
+		);
+		$identifier->receivePath('/');
+		$this->assertEquals(
+			\vfsStream::url(
+				'POApplicationDispatchableMvcControllerIdentifierFolderStructureTest' .
+				'/JustTemplate/Index.phtml'
+			),
+			$identifier->getTemplatePath()
+		);
+		// @todo Test cannot be run as it looks for the
+		// existence of a class \Index - for the test to
+		// work, this should not exist however it does
+		// exist due to other tests in this class
+		//$this->assertEquals(null, $identifier->getControllerClass());
 	}
 	
 	public function testNestedIndexTemplateCanBeFound()
