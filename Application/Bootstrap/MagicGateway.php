@@ -21,7 +21,6 @@ implements IBootstrap
 	private $ioCContainer;
 	
 	public function __construct(
-		Gateway				$gateway,
 		DependencyFactory	$dependencyFactory,
 		/* string */		$searchDirectory
 	)
@@ -34,7 +33,6 @@ implements IBootstrap
 				"Provided directory: $searchDirectory"
 			);
 		}
-		$this->gateway = $gateway;
 		$this->dependencyFactory = $dependencyFactory;
 		$this->searchDirectory = $searchDirectory;
 	}
@@ -44,10 +42,12 @@ implements IBootstrap
 		
 		$this->ioCContainer = $ioCContainer;
 		
-		$ioCContainer->registerSingleton($this->gateway);
+		$gateway = $ioCContainer->resolve('PO\Gateway');
+		
+		$ioCContainer->registerSingleton($gateway);
 		
 		foreach ($this->getAllModels() as $className) {
-			$this->gateway->addType(
+			$gateway->addType(
 				$className,
 				$this->getFactory($className),
 				$this->getQueryProvider($className)

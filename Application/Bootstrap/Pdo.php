@@ -66,15 +66,10 @@ implements IBootstrap
 		}
 		
 		// As the database name is the only value
-		// we cannot provide a default for, throw
-		// an exception if we did not get one from
+		// we cannot provide a default for, drop
+		// out here if we did not get one from
 		// the constructor or config
-		if (!$this->dbName && !$defaults['name']) {
-			throw new \RuntimeException(
-				'A database name must be provided to either the ' .
-				'constructor or via an application config file'
-			);
-		}
+		if (!$this->dbName && !$defaults['name']) return;
 		
 		// Use values from the constructor
 		// if they were provided
