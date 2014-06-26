@@ -40,7 +40,8 @@ extends \PO\View
 				$reflectionArguments = $reflectionFunction->getParameters();
 				$arguments = [];
 				for ($i = 0; $i < count($call['args']); $i++) {
-					if (method_exists($reflectionArguments[$i], 'getName')
+					if (isset($reflectionArguments[$i])
+					&&	method_exists($reflectionArguments[$i], 'getName')
 					&&	$reflectionArguments[$i]->getName() != '...') {
 						array_push($arguments, [
 							'name'		=> $reflectionArguments[$i]->getName(),
