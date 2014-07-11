@@ -1,0 +1,30 @@
+<form
+	method="<?= $method; ?>"
+	<?php if (isset($target)) : ?>
+		target="<?= $target; ?>"
+	<?php endif; ?>
+>
+	<?php foreach ($elements as $element) : ?>
+		<<?= $element['tag']; ?>
+		<?php foreach ($element['attributes'] as $attributeKey => $attributeValues) : ?>
+			<?php if (is_array($attributeValues)) : ?>
+				<?= $attributeKey; ?>="<?= implode(' ', $attributeValues); ?>"
+			<?php else : ?>
+				<?= $attributeKey; ?>
+			<?php endif; ?>
+		<?php endforeach; ?>>
+		<?php if (!$element['selfClosing']) : ?>
+			<?php if (isset($element['content'])) echo $element['content']; ?>
+			<?php if (isset($element['options'])) : ?>
+				<?php foreach ($element['options'] as $option) : ?>
+					<option <?php if (isset($option['value'])) echo "value=\"$option[value]\""; ?>>
+						<?php if (isset($option['label'])) : ?>
+							<?= $option['label']; ?>
+							</option>
+						<?php endif; ?>
+				<?php endforeach; ?>
+			<?php endif; ?>
+			</<?= $element['tag']; ?>>
+		<?php endif; ?>
+	<?php endforeach; ?>
+</form>
