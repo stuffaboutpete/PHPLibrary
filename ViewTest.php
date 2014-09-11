@@ -37,7 +37,27 @@ extends \PHPUnit_Framework_TestCase {
 				'Test.phtml' => 'I\'m in Nested/Test.phtml'
 			),
 			'NoTemplate.php' => '<?php namespace POViewTest;' .
-				'class NoTemplate extends \PO\View {}'
+				'class NoTemplate extends \PO\View {}',
+			'Child' => array(
+				'Test.php' => '<?php namespace POViewTest\Child; ' .
+					'class Test extends \POViewTest\Test {}',
+				'Test.phtml' => 'I\'m in Child\Test.phtml',
+				'NoTemplate.php' => '<?php namespace POViewTest\Child; ' .
+					'class NoTemplate extends \POViewTest\Test {}',
+				'Child' => array(
+					'Test.php' => '<?php namespace POViewTest\Child\Child; ' .
+						'class Test extends \POViewTest\Child\Test {}',
+					'Test.phtml' => 'I\'m in Child\Child\Test.phtml',
+				)
+			),
+			'Container.php' => '<?php namespace POViewTest; class Container extends \PO\View { ' .
+				'public function setContent($content){ ' .
+					'$this->addTemplateVariable(\'content\', $content); ' .
+				'}' .
+			'}',
+			'Container.phtml' => 'Container (<?= $content; ?>)',
+			'Content.php' => '<?php namespace POViewTest; class Content extends \PO\View {}',
+			'Content.phtml' => 'Content'
 		));
 		parent::setUp();
 	}
@@ -96,7 +116,7 @@ extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals('I\'m in Nested/Test.phtml', $view->__toString());
 	}
 	
-	public function testExceptionIsThrownIRelativePathToTemplateIsInvalid()
+	public function testExceptionIsThrownIfRelativePathToTemplateIsInvalid()
 	{
 		$this->setExpectedException('\PO\View\Exception');
 		$view = \POViewTest\TestViewCreator::makeView('InvalidPath.phtml');
@@ -140,6 +160,82 @@ extends \PHPUnit_Framework_TestCase {
 	{
 		$this->setExpectedException('\PO\View\Exception');
 		$view = new View(\vfsStream::url('POViewTest/Test.phtml'), ['value 1', 'value 2']);
+	}
+	
+	public function testInheritingViewIsUsedToIdentifyTemplate()
+	{
+		$view = new \POViewTest\Child\Test();
+		$this->assertEquals('I\'m in Child\Test.phtml', $view->__toString());
+	}
+	
+	public function testParentViewIsUsedToIdentifyTemplateIfNoChildTemplateExists()
+	{
+		$view = new \POViewTest\Child\NoTemplate();
+		$this->assertEquals('I\'m in Test.phtml', $view->__toString());
+	}
+	
+	public function testChildViewCanNominateToUseAParentView()
+	{
+		$view = new \POViewTest\Child\Child\Test();
+		$this->assertEquals('I\'m in Child\Child\Test.phtml', $view->__toString());
+		$view = new \POViewTest\Child\Child\Test();
+		$class = new \ReflectionClass($view);
+		$method = $class->getMethod('useAncestorTemplate');
+		$method->setAccessible(true);
+		$method->invokeArgs($view, [\POViewTest\Child\Test::Class]);
+		$this->assertEquals('I\'m in Child\Test.phtml', $view->__toString());
+	}
+	
+	public function testExceptionIsThrownIfAncestorClassDoesNotExist()
+	{
+		$this->setExpectedException(
+			'\PO\View\Exception',
+			'',
+			View\Exception::ANCESTOR_CLASS_DOES_NOT_EXIST
+		);
+		$view = new \POViewTest\Child\Child\Test();
+		$class = new \ReflectionClass($view);
+		$method = $class->getMethod('useAncestorTemplate');
+		$method->setAccessible(true);
+		$method->invokeArgs($view, ['InvalidClassName']);
+	}
+	
+	public function testExceptionIsThrownIfAncestorClassIsNotInInheritanceChain()
+	{
+		$this->setExpectedException(
+			'\PO\View\Exception',
+			'',
+			View\Exception::ANCESTOR_CLASS_NOT_ANCESTOR
+		);
+		$view = new \POViewTest\Child\Child\Test();
+		$class = new \ReflectionClass($view);
+		$method = $class->getMethod('useAncestorTemplate');
+		$method->setAccessible(true);
+		$method->invokeArgs($view, ['stdClass']);
+	}
+	
+	public function testCanBeRenderedIntoDifferentViewByPassingOutputToSpecifiedMethod()
+	{
+		$view = new \POViewTest\Content();
+		$class = new \ReflectionClass($view);
+		$method = $class->getMethod('renderInto');
+		$method->setAccessible(true);
+		$method->invokeArgs($view, [new \POViewTest\Container(), 'setContent']);
+		$this->assertEquals('Container (Content)', $view->__toString());
+	}
+	
+	public function testExceptionIsThrownIfMethodSpecifiedInRenderIntoDoesNotExist()
+	{
+		$this->setExpectedException(
+			View\Exception::Class,
+			'',
+			View\Exception::RENDER_INTO_METHOD_DOES_NOT_EXIST
+		);
+		$view = new \POViewTest\Content();
+		$class = new \ReflectionClass($view);
+		$method = $class->getMethod('renderInto');
+		$method->setAccessible(true);
+		$method->invokeArgs($view, [new \POViewTest\Container(), 'invalidMethod']);
 	}
 	
 }
