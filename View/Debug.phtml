@@ -174,20 +174,55 @@
 		
 	<?php endif; ?>
 	
-	<script src="/jquery.js" ></script>
 	<script>
 		
-		jQuery('.hasDetails').hover(function(){
-			var $stackTrace = jQuery('#stackTrace');
-			var $details = jQuery(this).next('.details');
-			$details.show().css({
-				width: $stackTrace.width() - 8,
-				left: $stackTrace.offset().left + 4,
-				top: jQuery(this).offset().top - $details.height() - 16
-			});
-		}, function(){
-			jQuery(this).next('.details').hide();
-		});
+		// Get all elements matching the class '.hasDetails'
+		var allElements = document.getElementsByTagName('*');
+		var hasDetailsElements = [];
+		for (i in allElements) {
+			var className = allElements[i].className;
+			if (!className) continue;
+			if ((' ' + className.replace(/\s+/g, ' ') + ' ').indexOf(' hasDetails ') > -1) {
+				hasDetailsElements.push(allElements[i]);
+			}
+		}
+		
+		// For each hasDetails element...
+		for (var i in hasDetailsElements) {
+			var element = hasDetailsElements[i];
+			
+			// Bind a mouse enter event
+			element.onmouseover = function(){
+				
+				// Get a couple of elements
+				var details = this.nextElementSibling;
+				var stackTrace = document.getElementById('stackTrace');
+				
+				// Set the details element
+				// to be visible
+				details.style.display = 'inline';
+				
+				// Get some bounding rectangles
+				// of interesting elements
+				var stackTraceRectangle = stackTrace.getBoundingClientRect();
+				var detailsRectangle = details.getBoundingClientRect();
+				var elementRectangle = this.getBoundingClientRect();
+				
+				// Set the position and size
+				// of the details element
+				details.style.width = stackTraceRectangle.width - 30 + 'px';
+				details.style.left = stackTraceRectangle.left + 4 + 'px';
+				details.style.top = elementRectangle.top - detailsRectangle.height - 4 + 'px';
+				
+			}
+			
+			// Bind a mouse exit event which
+			// simply hides the details
+			element.onmouseout = function(){
+				this.nextElementSibling.style.display = 'none';
+			}
+			
+		}
 		
 	</script>
 	
