@@ -2,6 +2,7 @@
 
 namespace PO;
 
+use PO\IoCContainer\Exception;
 use PO\IoCContainer\IContainment;
 
 /**
@@ -80,10 +81,10 @@ class IoCContainer
 	 * @param  mixed  $dependencies           optional Object dependencies or data for callback
 	 * @param  mixed  $downstreamDependencies optional Further dependencies or data for callback
 	 * @return mixed                                   An object or return value from a callback
-	 * @throws InvalidArgumentException If dependencies or downstream dependencies are not an array
-	 * @throws BadMethodCallException   If alias is an interface and method is called statically
-	 * @throws InvalidArgumentException If alias is not a valid class or interface
-	 * @throws RuntimeException         If a non typed dependency is not provided
+	 * @throws PO\IoCContainer\Exception If dependencies or downstream dependencies are not an array
+	 * @throws PO\IoCContainer\Exception If alias is an interface and method is called statically
+	 * @throws PO\IoCContainer\Exception If alias is not a valid class or interface
+	 * @throws PO\IoCContainer\Exception If a non typed dependency is not provided
 	 * @todo   Should accept $thisCallOnlyDependencies in the same way as call()
 	 */
 	public function resolve($alias, $dependencies = [], $downstreamDependencies = [])
@@ -106,17 +107,26 @@ class IoCContainer
 		// dependencies are not in an array,
 		// throw an exception
 		if (!is_array($dependencies)) {
-			throw new \InvalidArgumentException('Dependencies must be an array');
+			throw new Exception(
+				Exception::PROVIDED_DEPENDENCIES_MUST_BE_INSIDE_ARRAY,
+				'Provided type: ' . gettype($dependencies)
+			);
 		}
 		if (!is_array($downstreamDependencies)) {
-			throw new \InvalidArgumentException('Downstream dependencies must be an array');
+			throw new Exception(
+				Exception::PROVIDED_DOWNSTREAM_DEPENDENCIES_MUST_BE_INSIDE_ARRAY,
+				'Provided type: ' . gettype($downstreamDependencies)
+			);
 		}
 		
 		// If the alias refers to an interface
 		// but the method is called statically,
 		// throw an exception
 		if (interface_exists($alias) && $isStatic) {
-			throw new \BadMethodCallException('Cannot resolve an interface statically');
+			throw new Exception(
+				Exception::INTERFACE_CANNOT_BE_RESOLVED_STATICALLY,
+				"Interface: $alias"
+			);
 		}
 		
 		// If the alias refers to an interface
@@ -138,7 +148,10 @@ class IoCContainer
 		// If the alias does not at this point
 		// refer to a class, throw an exception
 		if (!class_exists($alias)) {
-			throw new \InvalidArgumentException("$alias is not a valid class");
+			throw new Exception(
+				Exception::INVALID_CLASS,
+				"Class: $alias"
+			);
 		}
 		
 		// If the object has a constructor, we
@@ -167,11 +180,17 @@ class IoCContainer
 	{
 		
 		if (!is_object($object)) {
-			throw new \InvalidArgumentException('Provided argument is not an object');
+			throw new Exception(
+				Exception::NON_OBJECT_PROVIDED_TO_CALL,
+				'Provided type: ' . gettype($object)
+			);
 		}
 		
 		if (!method_exists($object, $method)) {
-			throw new \InvalidArgumentException('Provided method does not exist on object');
+			throw new Exception(
+				Exception::CALL_METHOD_DOES_NOT_EXIST,
+				'Class: ' . get_class($object) . ", Method: $method"
+			);
 		}
 		
 		$arguments = self::getArguments(
@@ -244,20 +263,25 @@ class IoCContainer
 			// exception as we do not have anything
 			// to pass the constructor
 			if ($type == '<required>') {
-				throw new \RuntimeException(
-					'A dependency must be provided for non-typed arguments'
+				throw new Exception(
+					Exception::CANNOT_INJECT_NON_OBJECT_DEPENDENCY,
+					'Class: ' . $method->getDeclaringClass()->getName() .
+					', Method: ' . $method->getName() .
+					', Name: $' . $parameter->getName()
 				);
 			}
 			
 			foreach ($thisCallOnlyDependencies as $dependency) {
 				if (!is_object($dependency)) {
-					throw new \InvalidArgumentException(
-						'Dependencies for use in this call ony must be objects'
+					throw new Exception(
+						Exception::SINGLETON_STYLE_DEPENDENCY_MUST_BE_OBJECT,
+						'Provided type: ' . gettype($dependency)
 					);
 				}
 				if (!$isStatic && isset($this->singletons[get_class($dependency)])) {
-					throw new \RuntimeException(
-						'Dependency provided for this call only conflicts with a pre-registered singleton object'
+					throw new Exception(
+						Exception::SINGLETON_STYLE_DEPENDENCY_CONFLICTS_WITH_REGISTERED_SINGLETON,
+						'Class: ' . get_class($dependency)
 					);
 				}
 				if (get_class($dependency) == $type) {
@@ -312,14 +336,17 @@ class IoCContainer
 	 * @param  string   $alias        The alias to be used when resolving the callback
 	 * @param  callable $callback     The callback
 	 * @return PO\IoCContainer    $this
-	 * @throws BadMethodCallException If method is called statically
+	 * @throws PO\IoCContainer\Exception If method is called statically
 	 */
 	public function registerCallback($alias, callable $callback)
 	{
 		
 		// Ensure the method is not called statically
 		if (!isset($this) || get_class($this) != __CLASS__) {
-			throw new \BadMethodCallException('Cannot register a callback statically');
+			throw new Exception(
+				Exception::CALLBACK_CANNOT_BE_REGISTERED_STATICALLY,
+				"Alias: $alias"
+			);
 		}
 		
 		// Register the callback
@@ -338,20 +365,28 @@ class IoCContainer
 	 * 
 	 * @param  object $object           The object to be used as a singleton
 	 * @return PO\IoCContainer      $this
-	 * @throws BadMethodCallException   If method is called statically
-	 * @throws InvalidArgumentException If a non object is supplied
-	 * @throws RuntimeException         If a singleton of this type has already been registered
+	 * @throws PO\IoCContainer\Exception If method is called statically
+	 * @throws PO\IoCContainer\Exception If a non object is supplied
+	 * @throws PO\IoCContainer\Exception If a singleton of this type has already been registered
 	 */
 	public function registerSingleton($object)
 	{
 		
 		// Ensure the method is not called statically
 		if (!isset($this) || get_class($this) != __CLASS__) {
-			throw new \BadMethodCallException('Cannot register a singleton statically');
+			throw new Exception(
+				Exception::SINGLETON_CANNOT_BE_REGISTERED_STATICALLY,
+				'Class: ' . get_class($object)
+			);
 		}
 		
 		// Ensure the provided argument is an object
-		if (!is_object($object)) throw new \InvalidArgumentException('Singleton must be an object');
+		if (!is_object($object)) {
+			throw new Exception(
+				Exception::CANNOT_REGISTER_NON_OBJECT_SINGLETON,
+				'Provided type: ' . gettype($object)
+			);
+		}
 		
 		// Discover the class type
 		$class = get_class($object);
@@ -359,7 +394,10 @@ class IoCContainer
 		// Ensure that no singleton has been
 		// registered for this class type
 		if (isset($this->singletons[$class])) {
-			throw new \RuntimeException('A singleton for this class has already been registered');
+			throw new Exception(
+				Exception::SINGLETON_INSTANCE_ALREADY_REGISTERED,
+				"Class: $class"
+			);
 		}
 		
 		// Register the singleton
@@ -379,15 +417,18 @@ class IoCContainer
 	 * @param  string $interface The interface name
 	 * @param  string $className The class name
 	 * @return PO\IoCContainer $this
-	 * @throws BadMethodCallException   If method is called statically
-	 * @throws InvalidArgumentException If class does not implement interface
+	 * @throws PO\IoCContainer\Exception If method is called statically
+	 * @throws PO\IoCContainer\Exception If class does not implement interface
 	 */
 	public function registerInterface($interface, $className)
 	{
 		
 		// Ensure the method is not called statically
 		if (!isset($this) || get_class($this) != __CLASS__) {
-			throw new \BadMethodCallException('Cannot register an interface statically');
+			throw new Exception(
+				Exception::INTERFACE_IMPLEMENTATION_CANNOT_BE_REGISTERED_STATICALLY,
+				"Interface: $interface, Class: $className"
+			);
 		}
 		
 		// Get a reflection object for the given class
@@ -396,6 +437,10 @@ class IoCContainer
 		// Using reflection, ensure the class
 		// implements the given interface
 		if (!$class->implementsInterface($interface)) {
+			throw new Exception(
+				Exception::OBJECT_DOES_NOT_IMPLEMENT_INTERFACE,
+				"Class: $className, Interface: $interface"
+			);
 			throw new \InvalidArgumentException('Class must implement provided interface');
 		}
 		

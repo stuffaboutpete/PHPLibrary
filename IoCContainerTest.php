@@ -33,7 +33,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testContainerThrowsExceptionIfNoClassCanBeFound()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::INVALID_CLASS
+		);
 		$container = new IoCContainer();
 		$container->resolve('NotAClass');
 	}
@@ -47,7 +51,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testContainerCannotCreateAnObjectWithANonObjectDependency()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CANNOT_INJECT_NON_OBJECT_DEPENDENCY
+		);
 		$container = new IoCContainer();
 		$container->resolve('PO\IoCContainerTestB');
 	}
@@ -85,7 +93,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testProvidedDependenciesMustBeInsideAnArray()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::PROVIDED_DEPENDENCIES_MUST_BE_INSIDE_ARRAY
+		);
 		$container = new IoCContainer();
 		$object = $container->resolve(
 			'PO\IoCContainerTestC',
@@ -110,7 +122,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testProvidedDownstreamDependenciesMustBeInsideAnArray()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::PROVIDED_DOWNSTREAM_DEPENDENCIES_MUST_BE_INSIDE_ARRAY
+		);
 		$container = new IoCContainer();
 		$object = $container->resolve(
 			'PO\IoCContainerTestD',
@@ -136,7 +152,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfNonObjectDependencyHasNoUserProvidedValue()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CANNOT_INJECT_NON_OBJECT_DEPENDENCY
+		);
 		$container = new IoCContainer();
 		$object = $container->resolve('PO\IoCContainerTestF');
 	}
@@ -188,14 +208,22 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testRegisterSingletonThrowsExceptionForNonObject()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CANNOT_REGISTER_NON_OBJECT_SINGLETON
+		);
 		$container = new IoCContainer();
 		$container->registerSingleton('string');
 	}
 	
 	public function testSingletonCannotBeReplaced()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::SINGLETON_INSTANCE_ALREADY_REGISTERED
+		);
 		$container = new IoCContainer();
 		$container->registerSingleton(new \stdClass());
 		$container->registerSingleton(new \stdClass());
@@ -203,7 +231,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testSingletonCannotBeRegisteredStatically()
 	{
-		$this->setExpectedException('BadMethodCallException');
+		$this->setExpectedException(
+		IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::SINGLETON_CANNOT_BE_REGISTERED_STATICALLY
+		);
 		IoCContainer::registerSingleton(new \stdClass());
 	}
 	
@@ -267,16 +299,12 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCallbackCannotBeRegisteredStatically()
 	{
-		$this->setExpectedException('BadMethodCallException');
+		$this->setExpectedException(
+		IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CALLBACK_CANNOT_BE_REGISTERED_STATICALLY
+		);
 		IoCContainer::registerCallback('alias', function(){});
-	}
-	
-	public function testCallbackIsNotUsedWhenObjectIsResolvedStatically()
-	{
-		$this->setExpectedException('\InvalidArgumentException');
-		$container = new IoCContainer();
-		$container->registerCallback('alias', function(){return new \stdClass(); });
-		IoCContainer::resolve('alias');
 	}
 	
 	public function testRegisteredInterfaceImplementationCanBeResolved()
@@ -292,7 +320,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testRegisteredInterfaceExampleMustImplementInterface()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::OBJECT_DOES_NOT_IMPLEMENT_INTERFACE
+		);
 		$container = new IoCContainer();
 		$container->registerInterface(
 			'PO\IoCContainerTestInterface',
@@ -326,7 +358,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testInterfaceImplementationCannotBeRegisteredStatically()
 	{
-		$this->setExpectedException('BadMethodCallException');
+		$this->setExpectedException(
+		IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::INTERFACE_IMPLEMENTATION_CANNOT_BE_REGISTERED_STATICALLY
+		);
 		IoCContainer::registerInterface(
 			'PO\IoCContainerTestInterface',
 			'PO\IoCContainerTestG'
@@ -335,7 +371,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testInterfaceImplementationCannotBeResolvedStatically()
 	{
-		$this->setExpectedException('BadMethodCallException');
+		$this->setExpectedException(
+		IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::INTERFACE_CANNOT_BE_RESOLVED_STATICALLY
+		);
 		$container = new IoCContainer();
 		$container->registerInterface(
 			'PO\IoCContainerTestInterface',
@@ -354,14 +394,22 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfNonObjectIsPassedToCall()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::NON_OBJECT_PROVIDED_TO_CALL
+		);
 		$container = new IoCContainer();
 		$container->call('non object', 'someMethod');
 	}
 	
 	public function testExceptionIsThrownIfObjectPassedToCallDoesNotHaveGivenMethod()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CALL_METHOD_DOES_NOT_EXIST
+		);
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call($object, 'invalidMethod');
@@ -369,7 +417,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testCannotCallAMethodWithANonObjectDependency()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CANNOT_INJECT_NON_OBJECT_DEPENDENCY
+		);
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call($object, 'testMethod2');
@@ -433,7 +485,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testSingletonStyleDependenciesMustBeObjects()
 	{
-		$this->setExpectedException('\InvalidArgumentException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::SINGLETON_STYLE_DEPENDENCY_MUST_BE_OBJECT
+		);
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call(
@@ -448,7 +504,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testSingletonStyleDependencyCannotBeProvidedIfSingletonAlreadyExists()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::SINGLETON_STYLE_DEPENDENCY_CONFLICTS_WITH_REGISTERED_SINGLETON
+		);
 		$stdObject1 = new \stdClass();
 		$stdObject2 = new \stdClass();
 		$container = new IoCContainer();
@@ -516,7 +576,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testExceptionIsThrownIfNonObjectMethodDependencyHasNoUserProvidedValue()
 	{
-		$this->setExpectedException('\RuntimeException');
+		$this->setExpectedException(
+			IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::CANNOT_INJECT_NON_OBJECT_DEPENDENCY
+		);
 		$container = new IoCContainer();
 		$object = new IoCContainerTestI();
 		$container->call($object, 'testMethod2');
@@ -598,7 +662,11 @@ extends \PHPUnit_Framework_TestCase {
 	
 	public function testInterfaceImplementationIsNotUsedWhenMethodIsCalledStatically()
 	{
-		$this->setExpectedException('BadMethodCallException');
+		$this->setExpectedException(
+		IoCContainer\Exception::Class,
+			'',
+			IoCContainer\Exception::INTERFACE_CANNOT_BE_RESOLVED_STATICALLY
+		);
 		$container = new IoCContainer();
 		$container->registerInterface(
 			'PO\IoCContainerTestInterface',
