@@ -231,11 +231,19 @@ class IoCContainer
 			}
 			
 			// If the type variable currently holds
-			// either <optional> or <required>, we
-			// know that the argument is not typed
-			// so we throw an exception as we do not
-			// have anything to pass the constructor
-			if ($type == '<optional>' || $type == '<required>') {
+			// <optional> we know that it is not
+			// typed and is optional so we pass nothing
+			if ($type == '<optional>') {
+				$arguments[] = null;
+				continue;
+			}
+			
+			// If the type variable currently holds
+			// <required> we know that it is not
+			// typed but required so we throw an
+			// exception as we do not have anything
+			// to pass the constructor
+			if ($type == '<required>') {
 				throw new \RuntimeException(
 					'A dependency must be provided for non-typed arguments'
 				);
