@@ -340,6 +340,11 @@ implements IDispatchable
 		$output = ob_get_contents();
 		ob_end_clean();
 		
+		// If we have a controller object,
+		// pass the current output to its
+		// render method
+		if (is_object($controller)) $output = $controller->render($output);
+		
 		// Set the response to 200 with
 		// the contents of the output buffer
 		$response->set200($output);

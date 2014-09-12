@@ -3,10 +3,12 @@
 namespace PO\Application\Dispatchable\Mvc;
 
 use PO\Application;
+use PO\View;
 
 abstract class Controller
 {
 	
+	private $renderInto = null;
 	private $templateVariables = [];
 	
 	/**
@@ -31,6 +33,23 @@ abstract class Controller
 	public function getTemplateVariables()
 	{
 		return $this->templateVariables;
+	}
+	
+	public function renderInto(View $view, $method)
+	{
+		if (!method_exists($view, $method)) {
+			// @todo Custom exception please
+			throw new \Exception("Method '$method' does not exists");
+		}
+		$this->renderInto = [$view, $method];
+	}
+	
+	public function render($content)
+	{
+		if (!isset($this->renderInto)) return $content;
+		$method = $this->renderInto[1];
+		$this->renderInto[0]->$method($content);
+		return $this->renderInto[0]->__toString();
 	}
 	
 }
